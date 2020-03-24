@@ -55,7 +55,6 @@ namespace MySqlX.XDevAPI
     private Timer _idleTimer;
     private bool _isClosed = false;
     internal const int DEMOTED_TIMEOUT = 120000;
-    private readonly object _dnsSrvLock = new object();
 
     #region Properties
     /// <summary>
@@ -292,25 +291,6 @@ namespace MySqlX.XDevAPI
       catch
       {
         newSession = null;
-      }
-
-      lock (_dnsSrvLock)
-      {
-        if (session.Settings.DnsSrv)
-        {
-          var dnsSrvRecords = DnsResolver.GetDnsSrvRecords(DnsResolver.ServiceName);
-          FailoverManager.SetHostList(dnsSrvRecords.ConvertAll(r => new FailoverServer(r.Target, r.Port, null)),
-            FailoverMethod.Sequential);
-
-          foreach (var idleSession in _inIdle)
-          {
-            string idleServer = idleSession.Settings.Server;
-            if (!FailoverManager.FailoverGroup.Hosts.Exists(h => h.Host == idleServer) && !_inUse.Contains(idleSession))
-            {
-              _inIdle.TryDequeue(out Session removedSession);
-            }
-          }
-        }
       }
 
       _autoResetEvent.Set();

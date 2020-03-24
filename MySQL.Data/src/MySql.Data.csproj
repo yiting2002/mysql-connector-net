@@ -34,18 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Ubiety.Dns.Core">
-      <HintPath>..\..\Dependencies\Ubiety.Dns.Core.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <Target Name="IncludeThirdPartyAssemblies">
-    <ItemGroup>
-      <BuildOutputInPackage Include="$(OutputPath)Ubiety.Dns.Core.dll" />
-    </ItemGroup>
-  </Target>
-
-  <ItemGroup>
     <PackageReference Include="System.Configuration.ConfigurationManager">
       <Version>4.4.1</Version>
     </PackageReference>
