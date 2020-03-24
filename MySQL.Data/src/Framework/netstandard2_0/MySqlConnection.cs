@@ -138,20 +138,6 @@ namespace MySql.Data.MySqlClient
       }
     }
 
-    void AssertPermissions()
-    {
-      // Security Asserts can only be done when the assemblies 
-      // are put in the GAC as documented in 
-      // http://msdn.microsoft.com/en-us/library/ff648665.aspx
-      if (this.Settings.IncludeSecurityAsserts)
-      {
-        PermissionSet set = new PermissionSet(PermissionState.None);
-        set.AddPermission(new MySqlClientPermission(ConnectionString));
-        set.Demand();
-        MySqlSecurityPermission.CreatePermissionSet(true).Assert();
-      }
-    }
-
     /// <summary>
     /// Creates a new MySqlConnection object with the exact same ConnectionString value
     /// </summary>

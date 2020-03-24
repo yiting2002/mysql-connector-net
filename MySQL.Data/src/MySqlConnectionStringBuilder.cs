@@ -91,28 +91,12 @@ namespace MySql.Data.MySqlClient
       // Authentication options.
       Options.Add(new MySqlConnectionStringOption("persistsecurityinfo", "persist security info", typeof(bool), false, false,
         (msb, sender, value) => { msb.SetValue("persistsecurityinfo", value); }, (msb, sender) => msb.PersistSecurityInfo));
-      Options.Add(new MySqlConnectionStringOption("integratedsecurity", "integrated security", typeof(bool), false, false,
-        delegate (MySqlConnectionStringBuilder msb, MySqlConnectionStringOption sender, object value)
-        {
-          if (!Platform.IsWindows())
-            throw new MySqlException("IntegratedSecurity is supported on Windows only");
-
-          msb.SetValue("Integrated Security", value.ToString().Equals("SSPI", StringComparison.OrdinalIgnoreCase) ? true : value);
-        },
-        delegate (MySqlConnectionStringBuilder msb, MySqlConnectionStringOption sender)
-        {
-          object val = msb.values["integratedsecurity"];
-          return (bool)val;
-        }
-        ));
       Options.Add(new MySqlConnectionStringOption("allowpublickeyretrieval", null, typeof(bool), false, false,
         (msb, sender, value) => { msb.SetValue("allowpublickeyretrieval", value); }, (msb, sender) => msb.AllowPublicKeyRetrieval));
 
       // Other properties.
       Options.Add(new MySqlConnectionStringOption("autoenlist", "auto enlist", typeof(bool), true, false,
         (msb, sender, value) => { msb.SetValue("autoenlist", value); }, (msb, sender) => msb.AutoEnlist));
-      Options.Add(new MySqlConnectionStringOption("includesecurityasserts", "include security asserts", typeof(bool), false, false,
-        (msb, sender, value) => { msb.SetValue("includesecurityasserts", value); }, (msb, sender) => msb.IncludeSecurityAsserts));
       Options.Add(new MySqlConnectionStringOption("allowzerodatetime", "allow zero datetime", typeof(bool), false, false,
         (msb, sender, value) => { msb.SetValue("allowzerodatetime", value); }, (msb, sender) => msb.AllowZeroDateTime));
       Options.Add(new MySqlConnectionStringOption("convertzerodatetime", "convert zero datetime", typeof(bool), false, false,
@@ -334,20 +318,6 @@ namespace MySql.Data.MySqlClient
     }
 
     /// <summary>
-    /// Gets or sets a boolean value that indicates if the connection should be encrypted.
-    /// </summary>
-    /// <remarks>Obsolte. Use <see cref="SslMode"/> instead.</remarks>
-    [Category("Authentication")]
-    [DisplayName("Integrated Security")]
-    [Description("Use windows authentication when connecting to server")]
-    [DefaultValue(false)]
-    public bool IntegratedSecurity
-    {
-      get { return (bool)values["integratedsecurity"]; }
-      set { SetValue("integratedsecurity", value); }
-    }
-
-    /// <summary>
     /// Gets or sets a boolean value that indicates if RSA public keys should be retrieved from the server.
     /// </summary>
     /// <remarks>This option is only relevant when SSL is disabled. Setting this option to <c>true</c> in
@@ -443,22 +413,6 @@ namespace MySql.Data.MySqlClient
     {
       get { return (bool)values["autoenlist"]; }
       set { SetValue("autoenlist", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets a boolean value that indicates if security asserts must be included.
-    /// </summary>
-    /// <remarks>Must be set to <c>true</c> when using the <see cref="MySqlClientPermission"/> class in a partial trust environment,
-    /// with the library installed in the GAC of the hosting environment. Not supported in .NET Core.
-    /// Default value is <c>false</c>.</remarks>
-    [Category("Advanced")]
-    [DisplayName("Include Security Asserts")]
-    [Description("Include security asserts to support Medium Trust")]
-    [DefaultValue(false)]
-    public bool IncludeSecurityAsserts
-    {
-      get { return (bool)values["includesecurityasserts"]; }
-      set { SetValue("includesecurityasserts", value); }
     }
 
     /// <summary>

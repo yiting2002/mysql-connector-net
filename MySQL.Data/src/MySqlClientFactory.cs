@@ -36,7 +36,6 @@ namespace MySql.Data.MySqlClient
   /// <summary>
   /// Represents a set of methods for creating instances of the MySQL client implementation of the data source classes.
   /// </summary>
-  [ReflectionPermission(SecurityAction.Assert, MemberAccess = true)]
   public sealed partial class MySqlClientFactory : DbProviderFactory, IServiceProvider
   {
     /// <summary>

@@ -88,27 +88,6 @@ namespace MySql.Data.MySqlClient
       {
         key = settings.ConnectionString;
       }
-
-      if (!settings.IntegratedSecurity || settings.ConnectionReset) return key;
-
-      try
-      {
-        // Append SID to the connection string to generate a key
-        // With Integrated security different Windows users with the same
-        // connection string may be mapped to different MySQL accounts.
-        System.Security.Principal.WindowsIdentity id =
-          System.Security.Principal.WindowsIdentity.GetCurrent();
-
-        key += ";" + id.User;
-      }
-      catch (System.Security.SecurityException ex)
-      {
-        // Documentation for WindowsIdentity.GetCurrent() states 
-        // SecurityException can be thrown. In this case the 
-        // connection can only be pooled if reset is done.
-        throw new MySqlException(Resources.NoWindowsIdentity, ex);
-      }
-
       return key;
     }
     public static MySqlPool GetPool(MySqlConnectionStringBuilder settings)

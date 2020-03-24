@@ -38,8 +38,6 @@ namespace MySql.Data.MySqlClient.Authentication
   {
     static partial void AuthenticationManagerCtorConfiguration()
     {
-  //TODO: TEST (CHANGE THIS CODE TO AuthenticationManagerCtorConfiguration in 452 and 46 project)
-      Plugins["authentication_windows_client"] = new PluginInfo("MySql.Data.MySqlClient.Authentication.MySqlWindowsAuthenticationPlugin");
       if (MySqlConfiguration.Settings != null && MySqlConfiguration.Settings.AuthenticationPlugins != null)
       {
         foreach (AuthenticationPluginConfigurationElement e in MySqlConfiguration.Settings.AuthenticationPlugins)

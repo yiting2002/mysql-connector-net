@@ -362,8 +362,6 @@ namespace MySql.Data.MySqlClient
 
       SetState(ConnectionState.Connecting, true);
 
-      AssertPermissions();
-
       //TODO: SUPPORT FOR 452 AND 46X
       // if we are auto enlisting in a current transaction, then we will be
       // treating the connection as pooled
