@@ -77,66 +77,6 @@ namespace MySql.Data.MySqlClient
       // Authentication options.
       Options.Add(new MySqlConnectionStringOption("user id", "uid,username,user name,user,userid", typeof(string), "", false));
       Options.Add(new MySqlConnectionStringOption("password", "pwd", typeof(string), "", false));
-      Options.Add(new MySqlConnectionStringOption("certificatefile", "certificate file", typeof(string), null, false));
-      Options.Add(new MySqlConnectionStringOption("certificatepassword", "certificate password,ssl-ca-pwd", typeof(string), null, false));
-      Options.Add(new MySqlConnectionStringOption("certificatestorelocation", "certificate store location", typeof(MySqlCertificateStoreLocation), MySqlCertificateStoreLocation.None, false));
-      Options.Add(new MySqlConnectionStringOption("certificatethumbprint", "certificate thumb print", typeof(string), null, false));
-      Options.Add(new MySqlConnectionStringOption("sslmode", "ssl mode,ssl-mode", typeof(MySqlSslMode), MySqlSslMode.Preferred, false,
-        (BaseSetterDelegate)((msb, sender, value) =>
-        {
-          MySqlSslMode newValue = (MySqlSslMode)Enum.Parse(typeof(MySqlSslMode), value.ToString(), true);
-          if (newValue == MySqlSslMode.None && msb.TlsVersion != null)
-            throw new ArgumentException(Resources.InvalidTlsVersionAndSslModeOption, nameof(TlsVersion));
-          msb.SetValue("sslmode", newValue);
-        }),
-        (BaseGetterDelegate)((msb, sender) => { return msb.SslMode; })));
-      Options.Add(new MySqlConnectionStringOption("sslca", "ssl-ca", typeof(string), null, false,
-        (BaseSetterDelegate)((msb, sender, value) => { msb.SslCa = value as string; }),
-        (BaseGetterDelegate)((msb, sender) => { return msb.SslCa; })));
-      Options.Add(new MySqlConnectionStringOption("sslkey", "ssl-key", typeof(string), null, false));
-      Options.Add(new MySqlConnectionStringOption("sslcert", "ssl-cert", typeof(string), null, false));
-      Options.Add(new MySqlConnectionStringOption("tlsversion", "tls-version,tls version", typeof(string), null, false,
-        (BaseSetterDelegate)((msb, sender, value) =>
-        {
-          if (value == null || string.IsNullOrWhiteSpace((string)value))
-          {
-            msb.SetValue("tlsversion", null);
-            return;
-          }
-          if (msb.SslMode == MySqlSslMode.None)
-            throw new ArgumentException(Resources.InvalidTlsVersionAndSslModeOption, nameof(TlsVersion));
-          string strValue = ((string)value).TrimStart('[', '(').TrimEnd(']', ')').Replace(" ", string.Empty);
-          if (string.IsNullOrWhiteSpace(strValue) || strValue == ",")
-            throw new ArgumentException(Resources.TlsVersionNotSupported);
-          SslProtocols protocols = SslProtocols.None;
-          foreach (string opt in strValue.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-          {
-            string tls = opt.ToLowerInvariant().Replace("v", "").Replace(".", "");
-            if (tls.Equals("tls1") || tls.Equals("tls10"))
-              tls = "tls";
-            SslProtocols protocol;
-            if (!tls.StartsWith("tls", StringComparison.OrdinalIgnoreCase)
-              || (!Enum.TryParse<SslProtocols>(tls, true, out protocol) && !tls.Equals("tls13", StringComparison.OrdinalIgnoreCase)))
-            {
-              string info = string.Empty;
-              throw new ArgumentException(string.Format(Resources.InvalidTlsVersionOption, opt, info), nameof(TlsVersion));
-            }
-            protocols |= protocol;
-          }
-          string strProtocols = protocols == SslProtocols.None ? string.Empty : Enum.Format(typeof(SslProtocols), protocols, "G");
-          strProtocols = (value.ToString().Equals("Tls13", StringComparison.OrdinalIgnoreCase)
-          || value.ToString().Equals("Tlsv1.3", StringComparison.OrdinalIgnoreCase)) ? "Tls13" : strProtocols;
-          msb.SetValue("tlsversion", strProtocols);
-        }),
-        (BaseGetterDelegate)((msb, sender) => { return msb.TlsVersion; })));
-
-      // SSH tunneling options.
-      Options.Add(new MySqlConnectionStringOption("sshhostname", "ssh host name,ssh-host-name", typeof(string), "", false));
-      Options.Add(new MySqlConnectionStringOption("sshport", "ssh port,ssh-port", typeof(uint), (uint)22, false));
-      Options.Add(new MySqlConnectionStringOption("sshusername", "ssh user name,ssh-user-name", typeof(string), "", false));
-      Options.Add(new MySqlConnectionStringOption("sshpassword", "ssh password,ssh-password", typeof(string), "", false));
-      Options.Add(new MySqlConnectionStringOption("sshkeyfile", "ssh key file,ssh-key-file", typeof(string), "", false));
-      Options.Add(new MySqlConnectionStringOption("sshpassphrase", "ssh pass phrase,ssh-pass-phrase", typeof(string), "", false));
 
       // Other properties.
       Options.Add(new MySqlConnectionStringOption("keepalive", "keep alive", typeof(uint), (uint)0, false));
@@ -250,206 +190,6 @@ namespace MySql.Data.MySqlClient
     {
       get { return (string)values["password"]; }
       set { SetValue("password", value); }
-    }
-
-    /// <summary>
-    ///  Gets or sets the path to the certificate file to be used.
-    /// </summary>
-    [Category("Authentication")]
-    [DisplayName("Certificate File")]
-    [Description("Certificate file in PKCS#12 format (.pfx) or path to a local file that " +
-            "contains a list of trusted TLS/SSL CAs (.pem).")]
-    public string CertificateFile
-    {
-      get { return (string)values["certificatefile"]; }
-      set { SetValue("certificatefile", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets the password to be used in conjunction with the certificate file.
-    /// </summary>
-    [Category("Authentication")]
-    [DisplayName("Certificate Password")]
-    [Description("Password for certificate file")]
-    public string CertificatePassword
-    {
-      get { return (string)values["certificatepassword"]; }
-      set { SetValue("certificatepassword", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets the location to a personal store where a certificate is held.
-    /// </summary>
-    [Category("Authentication")]
-    [DisplayName("Certificate Store Location")]
-    [Description("Certificate Store Location for client certificates")]
-    [DefaultValue(MySqlCertificateStoreLocation.None)]
-    public MySqlCertificateStoreLocation CertificateStoreLocation
-    {
-      get { return (MySqlCertificateStoreLocation)values["certificatestorelocation"]; }
-      set { SetValue("certificatestorelocation", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets a certificate thumbprint to ensure correct identification of a certificate contained within a personal store.
-    /// </summary>
-    [Category("Authentication")]
-    [DisplayName("Certificate Thumbprint")]
-    [Description("Certificate thumbprint. Can be used together with Certificate " +
-        "Store Location parameter to uniquely identify the certificate to be used " +
-        "for SSL authentication.")]
-    public string CertificateThumbprint
-    {
-      get { return (string)values["certificatethumbprint"]; }
-      set { SetValue("certificatethumbprint", value); }
-    }
-
-    /// <summary>
-    /// Indicates whether to use SSL connections and how to handle server certificate errors.
-    /// </summary>
-    [DisplayName("Ssl Mode")]
-    [Category("Authentication")]
-    [Description("SSL properties for connection.")]
-    [DefaultValue(MySqlSslMode.None)]
-    public MySqlSslMode SslMode
-    {
-      get { return (MySqlSslMode)values["sslmode"]; }
-      set { SetValue("sslmode", value); }
-    }
-
-    [DisplayName("Ssl Ca")]
-    [Category("Authentication")]
-    [Description("Path to a local file that contains a list of trusted TLS/SSL CAs.")]
-    public string SslCa
-    {
-      get { return CertificateFile; }
-      set
-      {
-        CertificateFile = value;
-      }
-    }
-
-    /// <summary>
-    /// Sets the TLS versions to use in a <see cref="SslMode">SSL connection</see> to the server.
-    /// </summary>
-    /// <example>
-    /// Tls version=TLSv1.1,TLSv1.2;
-    /// </example>
-    [DisplayName("TLS version")]
-    [Category("Security")]
-    [Description("TLS versions to use in a SSL connection to the server.")]
-    public string TlsVersion
-    {
-      get { return (string)values["tlsversion"]; }
-      set { SetValue("tlsversion", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets the path to a local key file in PEM format to use for establishing an encrypted connection.
-    /// </summary>
-    [DisplayName("Ssl Key")]
-    [Category("Authentication")]
-    [Description("Name of the SSL key file in PEM format to use for establishing an encrypted connection.")]
-    public string SslKey
-    {
-      get { return (string)values["sslkey"]; }
-      set { SetValue("sslkey", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets the path to a local certificate file in PEM format to use for establishing an encrypted connection.
-    /// </summary>
-    [DisplayName("Ssl Cert")]
-    [Category("Authentication")]
-    [Description("Name of the SSL certificate file in PEM format to use for establishing an encrypted connection.")]
-    public string SslCert
-    {
-      get { return (string)values["sslcert"]; }
-      set { SetValue("sslcert", value); }
-    }
-
-    #endregion
-
-    #region SSH Tunneling Properties
-
-    /// <summary>
-    /// Gets or sets the name of the SSH server.
-    /// </summary>
-    [Category("SSH")]
-    [DisplayName("SSH Host Name")]
-    [Description("The name of the SSH server.")]
-    [RefreshProperties(RefreshProperties.All)]
-    public string SshHostName
-    {
-      get { return (string)values["sshhostname"]; }
-      set { SetValue("sshhostname", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets the port number to use when authenticating to the SSH server.
-    /// </summary>
-    [Category("SSH")]
-    [DisplayName("SSH Port")]
-    [Description("Port used to establish a connection using SSH tunneling.")]
-    [RefreshProperties(RefreshProperties.All)]
-    public uint SshPort
-    {
-      get { return (uint)values["sshport"]; }
-      set { SetValue("sshport", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets the user name to authenticate to the SSH server.
-    /// </summary>
-    [Category("SSH")]
-    [DisplayName("SSH User Name")]
-    [Description("Indicates the user name to be used when connecting to the SSH server.")]
-    [RefreshProperties(RefreshProperties.All)]
-    public string SshUserName
-    {
-      get { return (string)values["sshusername"]; }
-      set { SetValue("sshusername", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets the password to authenticate to the SSH server.
-    /// </summary>
-    [Category("SSH")]
-    [DisplayName("SSH Password")]
-    [Description("Indicates the password to be used when authenticating to the SSH server.")]
-    [RefreshProperties(RefreshProperties.All)]
-    [PasswordPropertyText(true)]
-    public string SshPassword
-    {
-      get { return (string)values["sshpassword"]; }
-      set { SetValue("sshpassword", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets the SSH key file to authenticate to the SSH server.
-    /// </summary>
-    [Category("SSH")]
-    [DisplayName("SSH Key File")]
-    [Description("Indicates the path and name of the SSH key file to be used when authenticating to the SSH server.")]
-    [RefreshProperties(RefreshProperties.All)]
-    public string SshKeyFile
-    {
-      get { return (string)values["sshkeyfile"]; }
-      set { SetValue("sshkeyfile", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets the passphrase of the key file to authenticate to the SSH server.
-    /// </summary>
-    [Category("SSH")]
-    [DisplayName("SSH Passphrase")]
-    [Description("Indicates the passphrase associated to the key file to be used when authenticating to the SSH server.")]
-    [RefreshProperties(RefreshProperties.All)]
-    [PasswordPropertyText(true)]
-    public string SshPassphrase
-    {
-      get { return (string)values["sshpassphrase"]; }
-      set { SetValue("sshpassphrase", value); }
     }
 
     #endregion
@@ -625,7 +365,6 @@ namespace MySql.Data.MySqlClient
     {
       string[] queries = connectionString.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
       List<string> usedOptions = new List<string>();
-      bool sslModeIsNone = false;
 
       foreach (string query in queries)
       {
@@ -638,55 +377,14 @@ namespace MySql.Data.MySqlClient
         MySqlConnectionStringOption option = Options.Options.Where(o => o.Keyword == keyword || (o.Synonyms != null && o.Synonyms.Contains(keyword))).FirstOrDefault();
 
         if (option == null
-          || (option.Keyword != "sslmode"
-               && option.Keyword != "certificatefile"
-               && option.Keyword != "certificatepassword"
-               && option.Keyword != "sslcrl"
-               && option.Keyword != "sslca"
-               && option.Keyword != "sslcert"
-               && option.Keyword != "sslkey"
-               && option.Keyword != "server"
-               && option.Keyword != "tlsversion"))
+          || (option.Keyword != "server"))
           continue;
 
-        // SSL connection options can't be duplicated.
-        if (usedOptions.Contains(option.Keyword) && option.Keyword != "server" && 
-          option.Keyword != "tlsversion")
-          throw new ArgumentException(string.Format(Resources.DuplicatedSslConnectionOption, keyword));
-        else if (usedOptions.Contains(option.Keyword))
+        if (usedOptions.Contains(option.Keyword))
           throw new ArgumentException(string.Format(Resources.DuplicatedConnectionOption, keyword));
 
-        // SSL connection options can't be used if sslmode=None.
-        if (option.Keyword == "sslmode" && (value == "none" || value == "disabled"))
-          sslModeIsNone = true;
-
-        if (sslModeIsNone &&
-             (option.Keyword == "certificatefile"
-               || option.Keyword == "certificatepassword"
-               || option.Keyword == "sslcrl"
-               || option.Keyword == "sslca"
-               || option.Keyword == "sslcert"
-               || option.Keyword == "sslkey"))
-          throw new ArgumentException(Resources.InvalidOptionWhenSslDisabled);
-
-        // Preferred is not allowed for the X Protocol.
-        if (isXProtocol && option.Keyword == "sslmode" && (value == "preferred" || value == "prefered"))
-          throw new ArgumentException(string.Format(Resources.InvalidSslMode, keyValue[1]));
-
-        if (option.Keyword == "sslca" || option.Keyword == "certificatefile")
-        {
-          usedOptions.Add("sslca");
-          usedOptions.Add("certificatefile");
-        }
-        else
-          usedOptions.Add(option.Keyword);
+        usedOptions.Add(option.Keyword);
       }
-    }
-
-    internal bool IsSshEnabled()
-    {
-      return (!string.IsNullOrEmpty(SshUserName)
-               && (!string.IsNullOrEmpty(SshKeyFile) || !string.IsNullOrEmpty(SshPassword)));
     }
   }
 

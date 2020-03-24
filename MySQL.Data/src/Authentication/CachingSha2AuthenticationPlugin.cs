@@ -82,20 +82,6 @@ namespace MySql.Data.MySqlClient.Authentication
 	/// <returns>A byte array that contains the password of the user in the expected format.</returns>
     protected byte[] GeneratePassword()
     {
-      // If connection is secure perform full authentication.
-      if (Settings.SslMode != MySqlSslMode.None)
-      {
-        _authStage = AuthStage.FULL_AUTH;
-
-        // Send as clear text since the channel is already encrypted.
-        byte[] passBytes = Encoding.GetBytes(Settings.Password);
-        byte[] buffer = new byte[passBytes.Length + 1];
-        Array.Copy(passBytes, 0, buffer, 0, passBytes.Length);
-        buffer[passBytes.Length] = 0;
-        return buffer;
-      }
-      else
-      {
         // Request RSA key from server.
         if (rawPubkey != null && rawPubkey[0] == 4)
         {
@@ -112,7 +98,6 @@ namespace MySql.Data.MySqlClient.Authentication
           if (bytes != null && bytes.Length == 1 && bytes[0] == 0) return null;
           return bytes;
         }
-      }
     }
 
     private byte[] GetRsaPassword(string password, byte[] seedBytes, byte[] rawPublicKey)

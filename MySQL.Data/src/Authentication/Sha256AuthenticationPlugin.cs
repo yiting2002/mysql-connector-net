@@ -53,18 +53,6 @@ namespace MySql.Data.MySqlClient.Authentication
 
     public override object GetPassword()
     {
-      if (Settings.SslMode != MySqlSslMode.None)
-      {
-        // send as clear text, since the channel is already encrypted
-        byte[] passBytes = Encoding.GetBytes(Settings.Password);
-        byte[] buffer = new byte[passBytes.Length + 2];
-        Array.Copy(passBytes, 0, buffer, 1, passBytes.Length);
-        buffer[0] = (byte) (passBytes.Length+1);
-        buffer[buffer.Length-1] = 0x00;
-        return buffer;
-      }
-      else
-      {
         if (Settings.Password.Length == 0) return new byte[1];
         // send RSA encrypted, since the channel is not protected
         else if (rawPubkey == null) return new byte[] { 0x01 };
@@ -76,22 +64,12 @@ namespace MySql.Data.MySqlClient.Authentication
           if (bytes != null && bytes.Length == 1 && bytes[0] == 0) return null;
           return bytes;
         }
-      }
     }
 
     private byte[] GetNonLengthEncodedPassword()
     {
       // Required for AuthChange requests.
-      if (Settings.SslMode != MySqlSslMode.None)
-      {
-        // Send as clear text, since the channel is already encrypted.
-        byte[] passBytes = Encoding.GetBytes(Settings.Password);
-        byte[] buffer = new byte[passBytes.Length + 1];
-        Array.Copy(passBytes, 0, buffer, 0, passBytes.Length);
-        buffer[passBytes.Length] = 0;
-        return buffer;
-      }
-      else return GetPassword() as byte[];
+      return GetPassword() as byte[];
     }
 
     private byte[] GetRsaPassword(string password, byte[] seedBytes, byte[] rawPublicKey)

@@ -58,17 +58,11 @@ namespace MySqlX.Sessions
     private XProtocol protocol;
     private XPacketReaderWriter _reader;
     private XPacketReaderWriter _writer;
-    private bool serverSupportsTls = false;
     private const string mysqlxNamespace = "mysqlx";
     internal bool _supportsPreparedStatements = true;
     private int _stmtId = 0;
     private List<int> _preparedStatements = new List<int>();
     internal bool? sessionResetNoReauthentication = null;
-
-    /// <summary>
-    /// The used client to handle SSH connections.
-    /// </summary>
-    private Ssh _sshHandler;
 
     public XInternalSession(MySqlXConnectionStringBuilder settings) : base(settings)
     {
@@ -76,21 +70,6 @@ namespace MySqlX.Sessions
 
     protected override void Open()
     {
-      if (Settings.ConnectionProtocol == MySqlConnectionProtocol.Tcp && Settings.IsSshEnabled())
-      {
-        _sshHandler = new Ssh(
-          Settings.SshHostName,
-          Settings.SshUserName,
-          Settings.SshPassword,
-          Settings.SshKeyFile,
-          Settings.SshPassphrase,
-          Settings.SshPort,
-          Settings.Server,
-          Settings.Port,
-          true);
-        _sshHandler.StartClient();
-      }
-
       bool isUnix = Settings.ConnectionProtocol == MySqlConnectionProtocol.Unix ||
         Settings.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket;
       _stream = MyNetworkStream.CreateStream(
@@ -120,42 +99,7 @@ namespace MySqlX.Sessions
       }
       catch (Exception)
       {
-        if (Settings.ConnectionProtocol == MySqlConnectionProtocol.Tcp && Settings.IsSshEnabled())
-        {
-          _sshHandler?.StopClient();
-        }
-
         throw;
-      }
-
-      // Validates use of TLS.
-      if (Settings.SslMode != MySqlSslMode.None)
-      {
-        if (serverSupportsTls)
-        {
-          new Ssl(
-              Settings.Server,
-              Settings.SslMode,
-              Settings.CertificateFile,
-              Settings.CertificateStoreLocation,
-              Settings.CertificatePassword,
-              Settings.CertificateThumbprint,
-              Settings.SslCa,
-              Settings.SslCert,
-              Settings.SslKey,
-              Settings.TlsVersion)
-              .StartSSL(ref _stream, encoding, Settings.ToString());
-          _reader = new XPacketReaderWriter(_stream);
-          _writer = new XPacketReaderWriter(_stream);
-          protocol.SetXPackets(_reader, _writer);
-        }
-        else
-        {
-          // Client requires SSL connections.
-          string message = String.Format(Resources.NoServerSSLSupport,
-              Settings.Server);
-          throw new MySqlException(message);
-        }
       }
 
       Authenticate();
@@ -168,7 +112,7 @@ namespace MySqlX.Sessions
       // Default authentication
       if (Settings.Auth == MySqlAuthenticationMode.Default)
       {
-        if ((Settings.SslMode != MySqlSslMode.None && serverSupportsTls) || Settings.ConnectionProtocol == MySqlConnectionProtocol.Unix)
+        if (Settings.ConnectionProtocol == MySqlConnectionProtocol.Unix)
         {
           Settings.Auth = MySqlAuthenticationMode.PLAIN;
           AuthenticatePlain();
@@ -238,17 +182,6 @@ namespace MySqlX.Sessions
       protocol.GetServerCapabilities();
 
       Dictionary<string, object> clientCapabilities = new Dictionary<string, object>();
-
-      // validates TLS use
-      if (Settings.SslMode != MySqlSslMode.None)
-      {
-        var capability = protocol.Capabilities.Capabilities_.FirstOrDefault(i => i.Name.ToLowerInvariant() == "tls");
-        if (capability != null)
-        {
-          serverSupportsTls = true;
-          clientCapabilities.Add("tls", "1");
-        }
-      }
 
       // set connection-attributes
       if (Settings.ConnectionAttributes.ToLower() != "false")
@@ -387,11 +320,6 @@ namespace MySqlX.Sessions
       }
       finally
       {
-        if (Settings.ConnectionProtocol == MySqlConnectionProtocol.Tcp && Settings.IsSshEnabled())
-        {
-          _sshHandler?.StopClient();
-        }
-
         SessionState = SessionState.Closed;
         _stream.Dispose();
       }

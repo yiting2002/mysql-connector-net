@@ -66,20 +66,14 @@ namespace MySqlX.XDevAPI
 
       // Authentication options.
       Options.Add(new MySqlConnectionStringOption("auth", null, typeof(MySqlAuthenticationMode), MySqlAuthenticationMode.Default, false));
-      Options.Add(new MySqlConnectionStringOption("sslcrl", "ssl-crl", typeof(string), null, false,
-        (msb, sender, value) => { msb.SslCrl = value as string; }, ((msb, sender) => { return msb.SslCrl; })));
     }
 
     public MySqlXConnectionStringBuilder() : base()
     {
-      if (SslMode == MySqlSslMode.Preferred)
-        SslMode = MySqlSslMode.Required;
     }
 
     public MySqlXConnectionStringBuilder(string connStr, bool isDefaulPort = true) : base(connStr, true, isDefaulPort)
     {
-      if (SslMode == MySqlSslMode.Preferred)
-        SslMode = MySqlSslMode.Required;
     }
 
     #region Server Properties
@@ -137,16 +131,6 @@ namespace MySqlX.XDevAPI
     {
       get { return (MySqlAuthenticationMode)values["auth"]; }
       set { SetValue("auth", value); }
-    }
-
-    /// <summary>
-    /// Path to a local file containing certificate revocation lists.
-    /// </summary>
-    [Description("Path to a local file containing certificate revocation lists")]
-    public string SslCrl
-    {
-      get { throw new NotSupportedException(); }
-      set { throw new NotSupportedException(); }
     }
 
     #endregion
