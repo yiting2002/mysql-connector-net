@@ -41,9 +41,6 @@ using MySql.Data.MySqlClient.Replication;
 using MySql.Data.Failover;
 using System.Collections.Generic;
 using System.Net;
-#if NET452
-using System.Drawing.Design;
-#endif
 
 namespace MySql.Data.MySqlClient
 {
@@ -175,9 +172,6 @@ namespace MySql.Data.MySqlClient
     public override string ServerVersion => driver.Version.ToString();
 
     /// <include file='docs/MySqlConnection.xml' path='docs/ConnectionString/*'/>
-#if NET452
-    [Editor("MySql.Data.MySqlClient.Design.ConnectionStringTypeEditor,MySqlClient.Design", typeof(UITypeEditor))]
-#endif
     [Browsable(true)]
     [Category("Data")]
     [Description("Information used to connect to a DataSource, such as 'Server=xxx;UserId=yyy;Password=zzz;Database=dbdb'.")]

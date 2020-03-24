@@ -63,14 +63,12 @@ namespace MySql.Data.MySqlClient
       Options.Add(new MySqlConnectionStringOption("protocol", "connection protocol,connectionprotocol", typeof(MySqlConnectionProtocol), MySqlConnectionProtocol.Sockets, false,
         (BaseSetterDelegate)((msb, sender, value) =>
        {
-#if !NET452
          MySqlConnectionProtocol enumValue;
          if (Enum.TryParse<MySqlConnectionProtocol>(value.ToString(), true, out enumValue))
          {
            if (enumValue == MySqlConnectionProtocol.Memory || enumValue == MySqlConnectionProtocol.Pipe)
              throw new PlatformNotSupportedException(string.Format(Resources.OptionNotCurrentlySupported, $"Protocol={value}"));
          }
-#endif
          msb.SetValue("protocol", value);
        }),
         (msb, sender) => msb.ConnectionProtocol));
@@ -122,9 +120,6 @@ namespace MySql.Data.MySqlClient
               || (!Enum.TryParse<SslProtocols>(tls, true, out protocol) && !tls.Equals("tls13", StringComparison.OrdinalIgnoreCase)))
             {
               string info = string.Empty;
-#if NET48 || NETSTANDARD2_1
-              info = ", TLSv1.3";
-#endif
               throw new ArgumentException(string.Format(Resources.InvalidTlsVersionOption, opt, info), nameof(TlsVersion));
             }
             protocols |= protocol;

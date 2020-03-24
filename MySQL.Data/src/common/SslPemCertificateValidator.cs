@@ -54,11 +54,7 @@ namespace MySql.Data.common
         VerifyIssuer(sslCA, certificate);
         VerifyDates(sslCA);
         VerifyCAStatus(sslCA, true);
-#if NET452
-        VerifySignature(sslCA, DotNetUtilities.FromX509Certificate(certificate));
-#else
         VerifySignature(sslCA, new X509CertificateParser().ReadCertificate(certificate.GetRawCertData()));
-#endif
       }
 
       if (settings.SslMode == MySqlSslMode.VerifyFull)

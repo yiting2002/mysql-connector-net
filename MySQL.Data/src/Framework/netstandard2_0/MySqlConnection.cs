@@ -32,15 +32,11 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Security;
-using System.Drawing;
 using System.Security.Permissions;
 using System.Transactions;
 
 namespace MySql.Data.MySqlClient
 {
-#if NET452
-  [ToolboxBitmap(typeof(MySqlConnection), "MySqlClient.resources.connection.bmp")]
-#endif
   [DesignerCategory("Code")]
   [ToolboxItem(true)]
   public sealed partial class MySqlConnection : DbConnection, ICloneable

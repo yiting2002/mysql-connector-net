@@ -103,9 +103,6 @@ namespace MySql.Data.MySqlClient
     /// <include file='docs/mysqlcommand.xml' path='docs/CommandText/*'/>
     [Category("Data")]
     [Description("Command text to execute")]
-#if NET452
-    [Editor("MySql.Data.Common.Design.SqlCommandTextEditor,MySqlClient.Design", typeof(System.Drawing.Design.UITypeEditor))]
-#endif
     public override string CommandText
     {
       get { return cmdText; }

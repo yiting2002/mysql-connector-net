@@ -45,11 +45,7 @@ namespace MySql.Data.MySqlClient
       Options.Add(new MySqlConnectionStringOption("pipe", "pipe name,pipename", typeof(string), "MYSQL", false,
         (msb, sender, value) =>
         {
-#if !NET452
-          throw new PlatformNotSupportedException(string.Format(Resources.OptionNotCurrentlySupported, nameof(PipeName)));
-#else
           msb.SetValue("pipe", value);
-#endif
         },
         (msb, sender) => msb.PipeName));
       Options.Add(new MySqlConnectionStringOption("compress", "use compression,usecompression", typeof(bool), false, false,
@@ -65,11 +61,7 @@ namespace MySql.Data.MySqlClient
       Options.Add(new MySqlConnectionStringOption("sharedmemoryname", "shared memory name", typeof(string), "MYSQL", false,
         (msb, sender, value) =>
         {
-#if !NET452
-          throw new PlatformNotSupportedException(string.Format(Resources.OptionNotCurrentlySupported, nameof(SharedMemoryName)));
-#else
           msb.SetValue("sharedmemoryname", value);
-#endif
         },
         (msb, sender) => msb.SharedMemoryName));
       Options.Add(new MySqlConnectionStringOption("defaultcommandtimeout", "command timeout,default command timeout", typeof(uint), (uint)30, false,
@@ -104,11 +96,8 @@ namespace MySql.Data.MySqlClient
         {
           if (!Platform.IsWindows())
             throw new MySqlException("IntegratedSecurity is supported on Windows only");
-#if !NET452
-          throw new PlatformNotSupportedException(string.Format(Resources.OptionNotCurrentlySupported, nameof(IntegratedSecurity)));
-#else
+
           msb.SetValue("Integrated Security", value.ToString().Equals("SSPI", StringComparison.OrdinalIgnoreCase) ? true : value);
-#endif
         },
         delegate (MySqlConnectionStringBuilder msb, MySqlConnectionStringOption sender)
         {
@@ -139,11 +128,7 @@ namespace MySql.Data.MySqlClient
       Options.Add(new MySqlConnectionStringOption("useperformancemonitor", "use performance monitor,useperfmon,perfmon", typeof(bool), false, false,
         (msb, sender, value) =>
         {
-#if !NET452
-          throw new PlatformNotSupportedException(string.Format(Resources.OptionNotCurrentlySupported, nameof(UsePerformanceMonitor)));
-#else
           msb.SetValue("useperformancemonitor", value);
-#endif
         },
         (msb, sender) => msb.UsePerformanceMonitor));
       Options.Add(new MySqlConnectionStringOption("ignoreprepare", "ignore prepare", typeof(bool), true, false,

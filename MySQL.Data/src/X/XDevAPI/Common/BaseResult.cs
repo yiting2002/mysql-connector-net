@@ -29,7 +29,6 @@
 using System.Collections.Generic;
 using MySqlX.Protocol;
 using MySqlX.Sessions;
-using System.Collections.ObjectModel;
 using System;
 
 namespace MySqlX.XDevAPI.Common
@@ -89,11 +88,7 @@ namespace MySqlX.XDevAPI.Common
     /// <summary>
     /// Gets a read-only collection of <see cref="WarningInfo"/> objects derived from statement execution.
     /// </summary>
-#if NET_45_OR_GREATER
     public IReadOnlyList<WarningInfo> Warnings
-#else
-    public ReadOnlyCollection<WarningInfo> Warnings
-#endif
     {
       get { return _warnings.AsReadOnly(); }
     }

@@ -171,18 +171,11 @@ namespace MySql.Data.Common
       SslProtocols tlsProtocol = SslProtocols.None;
       if (_settings.TlsVersion != null)
       {
-#if NET452 || NETSTANDARD2_0
         if (_settings.TlsVersion.Equals("Tls13", StringComparison.OrdinalIgnoreCase))
           throw new NotSupportedException(Resources.Tlsv13NotSupported);
-#endif
 
         SslProtocols sslProtocolsToUse = (SslProtocols)Enum.Parse(typeof(SslProtocols), _settings.TlsVersion);
         List<SslProtocols> listProtocols = new List<SslProtocols>();
-
-#if NET48 || NETSTANDARD2_1
-        if (sslProtocolsToUse.HasFlag((SslProtocols)12288))
-          listProtocols.Add((SslProtocols)12288);
-#endif
 
         if (sslProtocolsToUse.HasFlag(SslProtocols.Tls12))
           listProtocols.Add(SslProtocols.Tls12);

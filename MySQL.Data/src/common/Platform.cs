@@ -27,15 +27,11 @@
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace MySql.Data.Common
 {
   internal class Platform
   {
-    private static bool _inited;
-    private static bool _isMono;
-
     /// <summary>
     /// By creating a private ctor, we keep the compiler from creating a default ctor
     /// </summary>
@@ -59,26 +55,12 @@ namespace MySql.Data.Common
 
     public static bool IsMacOSX()
     {
-#if NET452
       return Environment.OSVersion.Platform == PlatformID.MacOSX;
-#else
-      return RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-#endif
     }
-
 
     public static bool IsMono()
     {
-      if (!_inited)
-        Init();
-      return _isMono;
-    }
-
-    private static void Init()
-    {
-      _inited = true;
-      Type t = Type.GetType("Mono.Runtime");
-      _isMono = t != null;
+      return false;
     }
   }
 }

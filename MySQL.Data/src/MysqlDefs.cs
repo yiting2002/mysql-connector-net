@@ -29,8 +29,6 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Reflection;
-using System.Runtime.Versioning;
 
 namespace MySql.Data.MySqlClient
 {
@@ -505,9 +503,6 @@ namespace MySql.Data.MySqlClient
     static string _platform;
     static string _osName;
     static string _framework;
-#if NET452
-    static string _osDetails;
-#endif
 
     static MySqlConnectAttrs()
     {
@@ -516,9 +511,6 @@ namespace MySql.Data.MySqlClient
       InitPlatform();
       InitOSName();
       InitFramework();
-#if NET452
-      InitOSDetails();
-#endif
     }
 
     [DisplayName("_client_name")]
@@ -589,14 +581,6 @@ namespace MySql.Data.MySqlClient
       get { return _platform; }
     }
 
-#if NET452
-    [DisplayName("_os_details")]
-    public string OSDetails
-    {
-      get { return _osDetails; }
-    }
-#endif
-
     [DisplayName("_os")]
     public string OSName
     {
@@ -611,15 +595,7 @@ namespace MySql.Data.MySqlClient
 
     private static void InitVersion()
     {
-      _version = string.Empty;
-      try
-      {
-        _version = typeof(MySqlConnectAttrs).GetTypeInfo().Assembly.GetName().Version.ToString();
-      }
-      catch (Exception ex)
-      {
-        System.Diagnostics.Debug.WriteLine(ex.ToString());
-      }
+      _version = "8.0.19";
     }
 
     private static void InitOS()
@@ -645,33 +621,9 @@ namespace MySql.Data.MySqlClient
       _platform = Is64BitOS() ? "x86_64" : "x86_32";
     }
 
-#if NET452
-    private static void InitOSDetails()
-    {
-      _osDetails = string.Empty;
-
-      try
-      {
-        var searcher = new System.Management.ManagementObjectSearcher("SELECT Caption FROM Win32_OperatingSystem");
-        var collection = searcher.Get();
-        foreach (var mgtObj in collection)
-        {
-          _osDetails = mgtObj.GetPropertyValue("Caption").ToString();
-          break;
-        }
-      }
-      catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.ToString()); }
-    }
-#endif
-
-
     private static bool Is64BitOS()
     {
-#if CLR4
       return Environment.Is64BitOperatingSystem;
-#else
-      return Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE") == "AMD64";
-#endif
     }
 
     private static void InitOSName()
@@ -720,15 +672,7 @@ namespace MySql.Data.MySqlClient
 
     private static void InitFramework()
     {
-      _framework = string.Empty;
-      try
-      {
-        _framework = Assembly.GetEntryAssembly().GetCustomAttribute<TargetFrameworkAttribute>().FrameworkName;
-      }
-      catch (Exception ex)
-      {
-        System.Diagnostics.Debug.WriteLine(ex.ToString());
-      }
+      _framework = ".NETCoreApp,Version=v2.1";
     }
   }
 }
