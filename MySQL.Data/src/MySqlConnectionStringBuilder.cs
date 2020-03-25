@@ -117,20 +117,8 @@ namespace MySql.Data.MySqlClient
         (msb, sender, value) => { msb.SetValue("allowzerodatetime", value); }, (msb, sender) => msb.AllowZeroDateTime));
       Options.Add(new MySqlConnectionStringOption("convertzerodatetime", "convert zero datetime", typeof(bool), false, false,
         (msb, sender, value) => { msb.SetValue("convertzerodatetime", value); }, (msb, sender) => msb.ConvertZeroDateTime));
-      Options.Add(new MySqlConnectionStringOption("useusageadvisor", "use usage advisor,usage advisor", typeof(bool), false, false,
-        (msb, sender, value) =>
-        {
-          msb.SetValue("useusageadvisor", value);
-        },
-        (msb, sender) => msb.UseUsageAdvisor));
       Options.Add(new MySqlConnectionStringOption("procedurecachesize", "procedure cache size,procedure cache,procedurecache", typeof(uint), (uint)25, false,
         (msb, sender, value) => { msb.SetValue("procedurecachesize", value); }, (msb, sender) => msb.ProcedureCacheSize));
-      Options.Add(new MySqlConnectionStringOption("useperformancemonitor", "use performance monitor,useperfmon,perfmon", typeof(bool), false, false,
-        (msb, sender, value) =>
-        {
-          msb.SetValue("useperformancemonitor", value);
-        },
-        (msb, sender) => msb.UsePerformanceMonitor));
       Options.Add(new MySqlConnectionStringOption("ignoreprepare", "ignore prepare", typeof(bool), true, false,
         (msb, sender, value) => { msb.SetValue("ignoreprepare", value); }, (msb, sender) => msb.IgnorePrepare));
       Options.Add(new MySqlConnectionStringOption("respectbinaryflags", "respect binary flags", typeof(bool), true, false,
@@ -412,21 +400,6 @@ namespace MySql.Data.MySqlClient
     }
 
     /// <summary>
-    /// Gets or sets a boolean value that indicates if the Usage Advisor should be enabled.
-    /// </summary>
-    /// <remarks>Default value is <c>false</c>.</remarks>
-    [Category("Advanced")]
-    [DisplayName("Use Usage Advisor")]
-    [Description("Logs inefficient database operations")]
-    [RefreshProperties(RefreshProperties.All)]
-    [DefaultValue(false)]
-    public bool UseUsageAdvisor
-    {
-      get { return (bool)values["useusageadvisor"]; }
-      set { SetValue("useusageadvisor", value); }
-    }
-
-    /// <summary>
     /// Gets or sets the size of the stored procedure cache.
     /// </summary>
     /// <remarks>Default value is 25.</remarks>
@@ -440,21 +413,6 @@ namespace MySql.Data.MySqlClient
     {
       get { return (uint)values["procedurecachesize"]; }
       set { SetValue("procedurecachesize", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets a boolean value that indicates if the performance monitor hooks should be enabled.
-    /// </summary>
-    /// <remarks>Default value is <c>false</c>.</remarks>
-    [Category("Advanced")]
-    [DisplayName("Use Performance Monitor")]
-    [Description("Indicates that performance counters should be updated during execution.")]
-    [RefreshProperties(RefreshProperties.All)]
-    [DefaultValue(false)]
-    public bool UsePerformanceMonitor
-    {
-      get { return (bool)values["useperformancemonitor"]; }
-      set { SetValue("useperformancemonitor", value); }
     }
 
     /// <summary>

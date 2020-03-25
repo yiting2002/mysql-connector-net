@@ -93,8 +93,6 @@ namespace MySql.Data.MySqlClient
 
     #region Interal Methods & Properties
 
-    internal PerformanceMonitor PerfMonitor { get; private set; }
-
     internal ProcedureCache ProcedureCache { get; private set; }
 
     internal MySqlConnectionStringBuilder Settings { get; private set; }
@@ -469,7 +467,6 @@ namespace MySql.Data.MySqlClient
 
       // setup our schema provider
       _schemaProvider = new ISSchemaProvider(this);
-      PerfMonitor = new PerformanceMonitor(this);
 
       // if we are opening up inside a current transaction, then autoenlist
       // TODO: control this with a connection string option

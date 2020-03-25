@@ -132,22 +132,7 @@ namespace MySql.Data.MySqlClient
 
     public static Driver Create(MySqlConnectionStringBuilder settings)
     {
-      Driver d = null;
-
-      try
-      {
-        if (MySqlTrace.QueryAnalysisEnabled || settings.Logging || settings.UseUsageAdvisor)
-          d = new TracingDriver(settings);
-      }
-      catch (TypeInitializationException ex)
-      {
-        if (!(ex.InnerException is SecurityException))
-          throw ex;
-        //Only rethrow if InnerException is not a SecurityException. If it is a SecurityException then 
-        //we couldn't initialize MySqlTrace because we don't have unmanaged code permissions. 
-      }
-      if (d == null)
-        d = new Driver(settings);
+      Driver d = new Driver(settings);
 
       //this try was added as suggested fix submitted on MySql Bug 72025, socket connections are left in CLOSE_WAIT status when connector fails to open a new connection.
       //the bug is present when the client try to get more connections that the server support or has configured in the max_connections variable.
