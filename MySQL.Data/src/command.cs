@@ -836,7 +836,7 @@ namespace MySql.Data.MySqlClient
         keyword = keyword.Substring(0, indexChar);
 
       if (keywords == null)
-        keywords = new List<string>(Utils.ReadResource("keywords.txt").Replace("\r", "").Split('\n'));
+        keywords = new List<string>(Resources.keywords.Split('\n'));
 
       return !keywords.Contains(keyword);
     }

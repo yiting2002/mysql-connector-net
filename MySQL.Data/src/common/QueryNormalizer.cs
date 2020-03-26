@@ -29,9 +29,7 @@
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 
 
@@ -47,22 +45,7 @@ namespace MySql.Data.Common
 
     static QueryNormalizer()
     {
-      var assembly = Assembly.GetExecutingAssembly();
-      String resourceName = @"MySql.Data.keywords.txt";
-      using (var stream = assembly.GetManifestResourceStream(resourceName))
-      {
-        if (stream == null)
-          throw new Exception($"Resource {resourceName} not found in {assembly.FullName}.");
-        using (var reader = new StreamReader(stream))
-        {
-          string keyword = reader.ReadLine();
-          while (keyword != null)
-          {
-            Keywords.Add(keyword);
-            keyword = reader.ReadLine();
-          }
-        }
-      }
+      Keywords.AddRange(Resources.keywords.Split('\n'));
     }
 
     public string QueryType => _queryType;
