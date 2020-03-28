@@ -38,7 +38,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using MySqlX.XDevAPI;
 using static MySql.Data.MySqlClient.MySqlConnectionStringOption;
-using System.Security.Authentication;
 
 namespace MySql.Data.MySqlClient
 {
@@ -407,20 +406,6 @@ namespace MySql.Data.MySqlClient
     }
 
     public MySqlConnectionStringOption(string keyword, string synonyms, Type baseType, object defaultValue, bool obsolete,
-      SetterDelegate setter, GetterDelegate getter)
-    {
-      Keyword = StringUtility.ToLowerInvariant(keyword);
-      if (synonyms != null)
-        Synonyms = StringUtility.ToLowerInvariant(synonyms).Split(',');
-      BaseType = baseType;
-      Obsolete = obsolete;
-      DefaultValue = defaultValue;
-      Setter = setter;
-      Getter = getter;
-      IsCustomized = true;
-    }
-
-    public MySqlConnectionStringOption(string keyword, string synonyms, Type baseType, object defaultValue, bool obsolete,
       XSetterDelegate setter, XGetterDelegate getter)
     {
       Keyword = StringUtility.ToLowerInvariant(keyword);
@@ -457,15 +442,11 @@ namespace MySql.Data.MySqlClient
     public object DefaultValue { get; private set; }
     public BaseSetterDelegate BaseSetter { get; private set; }
     public BaseGetterDelegate BaseGetter { get; private set; }
-    public SetterDelegate Setter { get; private set; }
-    public GetterDelegate Getter { get; private set; }
     public XSetterDelegate XSetter { get; private set; }
     public XGetterDelegate XGetter { get; private set; }
 
     public delegate void BaseSetterDelegate(MySqlBaseConnectionStringBuilder msb, MySqlConnectionStringOption sender, object value);
     public delegate object BaseGetterDelegate(MySqlBaseConnectionStringBuilder msb, MySqlConnectionStringOption sender);
-    public delegate void SetterDelegate(MySqlConnectionStringBuilder msb, MySqlConnectionStringOption sender, object value);
-    public delegate object GetterDelegate(MySqlConnectionStringBuilder msb, MySqlConnectionStringOption sender);
     public delegate void XSetterDelegate(MySqlXConnectionStringBuilder msb, MySqlConnectionStringOption sender, object value);
     public delegate object XGetterDelegate(MySqlXConnectionStringBuilder msb, MySqlConnectionStringOption sender);
 

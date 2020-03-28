@@ -39,7 +39,6 @@ namespace MySqlX.XDevAPI.Relational
   {
     internal string[] fields;
     internal List<object[]> values = new List<object[]>();
-    internal object[] parameters;
 
     internal TableInsertStatement(Table table, string[] fields) : base(table)
     {

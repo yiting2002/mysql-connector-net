@@ -42,63 +42,6 @@ namespace MySql.Data.Common
   /// </summary>
   internal class StreamCreator
   {
-    public static Stream GetStream(string server, uint port, uint keepalive, uint timeout)
-    {
-      MySqlConnectionStringBuilder settings = new MySqlConnectionStringBuilder
-      {
-        Server = server,
-        Port = port,
-        Keepalive = keepalive,
-        ConnectionTimeout = timeout
-      };
-
-      return GetStream(settings);
-    }
-
-    public static Stream GetStream(MySqlConnectionStringBuilder settings)
-    {
-      switch (settings.ConnectionProtocol)
-      {
-        case MySqlConnectionProtocol.Tcp: return GetTcpStream(settings);
-        case MySqlConnectionProtocol.UnixSocket: return GetUnixSocketStream(settings);
-      }
-      throw new InvalidOperationException(Resources.UnknownConnectionProtocol);
-    }
-
-    private static Stream GetTcpStream(MySqlConnectionStringBuilder settings)
-    {
-      Task<IPAddress[]> dnsTask = Dns.GetHostAddressesAsync(settings.Server);
-      dnsTask.Wait();
-      if (dnsTask.Result == null || dnsTask.Result.Length == 0)
-        throw new ArgumentException(Resources.InvalidHostNameOrAddress);
-      IPAddress addr = dnsTask.Result.SingleOrDefault(c => c.AddressFamily == AddressFamily.InterNetwork);
-      if (addr == null)
-        addr = dnsTask.Result[0];
-      TcpClient client = new TcpClient(addr.AddressFamily);
-      Task task = client.ConnectAsync(settings.Server, (int)settings.Port);
-      
-      if (!task.Wait(((int)settings.ConnectionTimeout * 1000)))
-        throw new MySqlException(Resources.Timeout);
-      if (settings.Keepalive > 0)
-      {
-        SetKeepAlive(client.Client, settings.Keepalive);
-      }
-
-      return client.GetStream();
-    }
-
-    internal static Stream GetUnixSocketStream(MySqlConnectionStringBuilder settings)
-    {
-      try
-      {
-        return new NetworkStream(GetUnixSocket(settings.Server, settings.ConnectionTimeout, settings.Keepalive), true);
-      }
-      catch (Exception)
-      {
-        throw;
-      }
-    }
-
     internal static Socket GetUnixSocket(string server, uint connectionTimeout, uint keepAlive)
     {
       if (Platform.IsWindows())

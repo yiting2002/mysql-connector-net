@@ -53,7 +53,7 @@ namespace MySqlX.XDevAPI
           uint timeout = Math.Min(value, Int32.MaxValue);
           if (timeout != value)
           {
-            MySqlTrace.LogWarning(-1, "Connection timeout value too large ("
+            System.Diagnostics.Trace.TraceWarning("Connection timeout value too large ("
                 + value + " milliseconds). Changed to max. possible value " +
                 +timeout + " milliseconds)");
           }
@@ -98,7 +98,7 @@ namespace MySqlX.XDevAPI
         uint timeout = Math.Min(value, Int32.MaxValue);
         if (timeout != value)
         {
-          MySqlTrace.LogWarning(-1, "Connection timeout value too large ("
+          System.Diagnostics.Trace.TraceWarning("Connection timeout value too large ("
               + value + " milliseconds). Changed to max. possible value" +
               +timeout + " milliseconds)");
         }

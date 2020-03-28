@@ -88,7 +88,7 @@ namespace MySqlX.Protocol.X
       if (_encoding == null)
       {
         string charset = Column.CharacterSetName ?? string.Empty;
-        _encoding = CharSetMap.GetEncoding(new DBVersion(), charset);
+        _encoding = CharSetMap.GetEncoding(charset);
       }
       return _encoding.GetString(bytes, 0, bytes.Length - 1);
     }

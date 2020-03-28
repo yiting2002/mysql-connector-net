@@ -60,18 +60,6 @@ namespace MySql.Data.MySqlClient
       IsFatal = isFatal;
     }
 
-    internal MySqlException(string msg, int errno, Exception inner)
-      : this(msg, inner)
-    {
-      Number = errno;
-      Data.Add("Server Error Code", errno);
-    }
-
-    internal MySqlException(string msg, int errno)
-      : this(msg, errno, null)
-    {
-    }
-
     internal MySqlException(UInt32 code, string sqlState, string msg) : base(msg)
     {
       Code = code;
@@ -84,17 +72,9 @@ namespace MySql.Data.MySqlClient
     }
 
     /// <summary>
-    /// Gets a number that identifies the type of error.
-    /// </summary>
-    public int Number { get; }
-
-    /// <summary>
     /// True if this exception was fatal and cause the closing of the connection, false otherwise.
     /// </summary>
     internal bool IsFatal { get; }
-
-    internal bool IsQueryAborted => (Number == (int)MySqlErrorCode.QueryInterrupted ||
-                                     Number == (int)MySqlErrorCode.FileSortAborted);
 
     /// <summary>
     /// Gets the SQL state.
