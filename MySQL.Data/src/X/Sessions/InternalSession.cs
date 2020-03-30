@@ -44,9 +44,7 @@ namespace MySqlX.Sessions
   /// </summary>  
   internal abstract class InternalSession : IDisposable
   {
-    protected Stream _stream;
     internal BaseResult ActiveResult;
-    private bool disposed = false;
 
     /// <summary>
     /// Creates a new session object with the values of the settings parameter.
@@ -61,15 +59,15 @@ namespace MySqlX.Sessions
 
     public abstract void Close();
 
-    internal abstract ProtocolBase GetProtocol();
+    internal abstract XProtocol GetProtocol();
 
     protected internal MySqlXConnectionStringBuilder Settings;
 
     public SessionState SessionState { get; protected set; }
 
-    public static InternalSession GetSession(MySqlXConnectionStringBuilder settings)
+    public static XInternalSession GetSession(MySqlXConnectionStringBuilder settings)
     {
-      InternalSession session = new XInternalSession(settings);
+      XInternalSession session = new XInternalSession(settings);
       int count = 0;
       do
       {
@@ -163,25 +161,12 @@ namespace MySqlX.Sessions
       GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    protected abstract void Dispose(bool disposing);
+
+    ~InternalSession()
     {
-      if (disposed) return;
-
-      if (disposing)
-      {
-        // Free any other managed objects here. 
-        //
-      }
-
-      // Free any unmanaged objects here. 
-      //
-      disposed = true;
+      Dispose(false);
     }
-
-    //~BaseSession()
-    //{
-    //  Dispose(false);
-    //}
 
     #endregion
   }

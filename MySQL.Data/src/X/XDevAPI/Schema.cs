@@ -172,7 +172,7 @@ namespace MySqlX.XDevAPI
     {
       ValidateOpenSession();
       string sql = String.Format("SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name like '{0}'", Name);
-      long count = (long)Session.InternalSession.ExecuteQueryAsScalar(sql);
+      long count = (long)Session.XSession.ExecuteQueryAsScalar(sql);
       return count > 0;
     }
 

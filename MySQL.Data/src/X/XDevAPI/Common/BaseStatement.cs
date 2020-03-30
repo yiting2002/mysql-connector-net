@@ -31,8 +31,6 @@ using MySql.Data.MySqlClient;
 using MySqlX.XDevAPI.Relational;
 using System;
 using System.Collections;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MySqlX.XDevAPI.Common
 {
@@ -66,30 +64,6 @@ namespace MySqlX.XDevAPI.Common
     /// </summary>
     /// <returns>A result object containing the details of the execution.</returns>
     public abstract TResult Execute();
-
-    /// <summary>
-    /// Executes a statement asynchronously.
-    /// </summary>
-    /// <returns>A result object containing the details of the execution.</returns>
-    public async Task<TResult> ExecuteAsync()
-    {
-      return await Task.Factory.StartNew<TResult>(() =>
-      {
-        var result = Execute();
-        if (result is BufferingResult<DbDoc>)
-        {
-          (result as BufferingResult<DbDoc>).FetchAll();
-        }
-        else if (result is BufferingResult<Row>)
-        {
-          (result as BufferingResult<Row>).FetchAll();
-        }
-        return result;
-      },
-        CancellationToken.None,
-        TaskCreationOptions.None,
-        Session._scheduler);
-    }
 
     /// <summary>
     /// Validates if the session is open and valid.

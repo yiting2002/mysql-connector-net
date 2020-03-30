@@ -45,6 +45,7 @@ using System.Text;
 using System.Diagnostics;
 using System.Collections;
 using System.Threading;
+using System.IO;
 
 namespace MySqlX.Sessions
 {
@@ -54,6 +55,7 @@ namespace MySqlX.Sessions
   /// </summary>
   internal class XInternalSession : InternalSession
   {
+    protected Stream _stream;
     private XProtocol protocol;
     private XPacketReaderWriter _reader;
     private XPacketReaderWriter _writer;
@@ -243,7 +245,7 @@ namespace MySqlX.Sessions
       //OnStateChange(new StateChangeEventArgs(oldConnectionState, connectionState));
     }
 
-    internal override ProtocolBase GetProtocol()
+    internal override XProtocol GetProtocol()
     {
       return protocol;
     }
@@ -252,19 +254,19 @@ namespace MySqlX.Sessions
     {
       try
       {
-        try
+        // Deallocate all the remaining prepared statements for current session.
+        foreach (int stmtId in _preparedStatements)
         {
-          // Deallocate all the remaining prepared statements for current session.
-          foreach (int stmtId in _preparedStatements)
-          {
-            DeallocatePreparedStatement(stmtId);
-            _preparedStatements.Remove(stmtId);
-          }
+          DeallocatePreparedStatement(stmtId);
+          _preparedStatements.Remove(stmtId);
         }
-        catch (Exception)
-        {
-          //TODO log exception
-        }
+      }
+      catch (Exception)
+      {
+        //TODO log exception
+      }
+      try
+      {
         protocol.SendSessionClose();
       }
       finally
@@ -273,6 +275,25 @@ namespace MySqlX.Sessions
         _stream.Dispose();
       }
     }
+
+    #region IDisposable
+
+    private bool disposed = false;
+
+    protected override void Dispose(bool disposing)
+    {
+      if (disposed) return;
+
+      if (disposing)
+      {
+        if (SessionState != SessionState.Closed)
+          Close();
+      }
+
+      disposed = true;
+    }
+
+    #endregion
 
     public void CreateCollection(string schemaName, string collectionName)
     {

@@ -183,7 +183,7 @@ namespace MySqlX.XDevAPI
     /// <remarks>This is a direct execution method.</remarks>
     public Result AddOrReplaceOne(object id, object doc)
     {
-      if (!this.Session.InternalSession.GetServerVersion().isAtLeast(8, 0, 3))
+      if (!this.Session.XSession.GetServerVersion().isAtLeast(8, 0, 3))
         throw new MySqlException(string.Format(ResourcesX.FunctionalityNotSupported, "8.0.3"));
       if (id == null)
         throw new ArgumentNullException(nameof(id));

@@ -50,7 +50,7 @@ namespace MySqlX.XDevAPI
     {
     }
 
-    internal Session(InternalSession internalSession)
+    internal Session(XInternalSession internalSession)
       : base(internalSession)
     {
     }
@@ -62,7 +62,7 @@ namespace MySqlX.XDevAPI
     /// <returns>A <see cref="SqlStatement"/> object set with the provided SQL.</returns>
     public SqlStatement SQL(string sql)
     {
-      if (InternalSession.SessionState != SessionState.Open)
+      if (XSession.SessionState != SessionState.Open)
         throw new MySqlException(ResourcesX.InvalidSession);
       return new SqlStatement(this, sql);
     }
@@ -73,7 +73,7 @@ namespace MySqlX.XDevAPI
     /// <param name="schema">The schema name to be set.</param>
     public void SetCurrentSchema(string schema)
     {
-      InternalSession.ExecuteSqlNonQuery($"USE `{schema}`");
+      XSession.ExecuteSqlNonQuery($"USE `{schema}`");
       GetSchema(schema);
     }
 
@@ -83,7 +83,7 @@ namespace MySqlX.XDevAPI
     /// <returns>Current database <see cref="Schema"/> object or null if no schema is selected.</returns>
     public Schema GetCurrentSchema()
     {
-      string schemaName = (string)InternalSession.ExecuteQueryAsScalar("SELECT DATABASE()");
+      string schemaName = (string)XSession.ExecuteQueryAsScalar("SELECT DATABASE()");
       return schemaName == null ? null : GetSchema(schemaName);
     }
   }

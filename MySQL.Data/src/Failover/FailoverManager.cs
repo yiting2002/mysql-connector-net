@@ -87,8 +87,8 @@ namespace MySql.Data.Failover
     /// <param name="originalConnectionString">The original connection string set by the user.</param>
     /// <param name="connectionString">An out parameter that stores the updated connection string.</param>
     /// <param name="client">A <see cref="Client"/> object in case this is a pooling scenario.</param>
-    /// <returns>An <see cref="InternalSession"/> instance if the connection was succesfully established, a <see cref="MySqlException"/> exception is thrown otherwise.</returns>
-    internal static InternalSession AttemptConnectionXProtocol(string originalConnectionString, out string connectionString, bool isDefaulPort)
+    /// <returns>An <see cref="XInternalSession"/> instance if the connection was succesfully established, a <see cref="MySqlException"/> exception is thrown otherwise.</returns>
+    internal static XInternalSession AttemptConnectionXProtocol(string originalConnectionString, out string connectionString, bool isDefaulPort)
     {
       if (FailoverGroup == null || originalConnectionString == null)
       {
@@ -99,7 +99,7 @@ namespace MySql.Data.Failover
       FailoverServer currentHost = FailoverGroup.ActiveHost;
       FailoverServer initialHost = currentHost;
       MySqlXConnectionStringBuilder Settings = null;
-      InternalSession internalSession = null;
+      XInternalSession internalSession = null;
 
       do
       {

@@ -46,7 +46,7 @@ namespace MySqlX.XDevAPI
   /// </summary>
   public abstract class BaseSession : IDisposable
   {
-    private InternalSession _internalSession;
+    private XInternalSession _internalSession;
     private string _connectionString;
     private bool _isDefaultPort = true;
     private const uint X_PROTOCOL_DEFAULT_PORT = 33060;
@@ -57,33 +57,13 @@ namespace MySqlX.XDevAPI
     private const string CONNECT_TIMEOUT_CONNECTION_OPTION_KEYWORD = "connect-timeout";
     private const string CONNECTION_ATTRIBUTES_CONNECTION_OPTION_KEYWORD = "connection-attributes";
     private const string MYSQLX_URI_SCHEME = "mysqlx";
-    internal QueueTaskScheduler _scheduler = new QueueTaskScheduler();
-
-    internal InternalSession InternalSession
-    {
-      get
-      {
-        if (_internalSession == null)
-          throw new MySqlException(ResourcesX.InvalidSession);
-        return _internalSession;
-      }
-    }
 
     internal XInternalSession XSession
     {
-      get { return InternalSession as XInternalSession; }
+      get { return _internalSession; }
     }
 
-    internal DateTime IdleSince { get; set; }
-
     #region Session status properties
-
-    private DBVersion? _version = null;
-
-    internal DBVersion Version => _version ?? (_version = XSession.GetServerVersion()).Value;
-
-    private int? _threadId = null;
-    internal int ThreadId => _threadId ?? (_threadId = XSession.GetThreadId()).Value;
 
     /// <summary>
     /// Flag to set if prepared statements are supported.
@@ -292,7 +272,7 @@ namespace MySqlX.XDevAPI
         DefaultSchema = GetSchema(Settings.Database);
     }
 
-    internal BaseSession(InternalSession internalSession)
+    internal BaseSession(XInternalSession internalSession)
     {
       _internalSession = internalSession;
       Settings = internalSession.Settings;
@@ -314,7 +294,7 @@ namespace MySqlX.XDevAPI
       if (string.IsNullOrWhiteSpace(schema)) throw new ArgumentNullException(nameof(schema));
       Schema s = this.GetSchema(schema);
       if (!s.ExistsInDatabase()) return;
-      InternalSession.ExecuteSqlNonQuery("DROP DATABASE `" + schema + "`");
+      _internalSession.ExecuteSqlNonQuery("DROP DATABASE `" + schema + "`");
     }
 
     /// <summary>
@@ -324,7 +304,7 @@ namespace MySqlX.XDevAPI
     /// <returns>A <see cref="Schema"/> object that matches the recently created schema/database.</returns>
     public Schema CreateSchema(string schema)
     {
-      InternalSession.ExecuteSqlNonQuery("CREATE DATABASE `" + schema + "`");
+      _internalSession.ExecuteSqlNonQuery("CREATE DATABASE `" + schema + "`");
       return new Schema(this, schema);
     }
 
@@ -357,7 +337,7 @@ namespace MySqlX.XDevAPI
     /// </summary>
     public void StartTransaction()
     {
-      InternalSession.ExecuteSqlNonQuery("START TRANSACTION");
+      _internalSession.ExecuteSqlNonQuery("START TRANSACTION");
     }
 
     /// <summary>
@@ -366,7 +346,7 @@ namespace MySqlX.XDevAPI
     /// <returns>A <see cref="Result"/> object containing the results of the commit operation.</returns>
     public void Commit()
     {
-      InternalSession.ExecuteSqlNonQuery("COMMIT");
+      _internalSession.ExecuteSqlNonQuery("COMMIT");
     }
 
     /// <summary>
@@ -374,28 +354,28 @@ namespace MySqlX.XDevAPI
     /// </summary>
     public void Rollback()
     {
-      InternalSession.ExecuteSqlNonQuery("ROLLBACK");
+      _internalSession.ExecuteSqlNonQuery("ROLLBACK");
     }
 
     public Session Reuse()
     {
-      Session newSession = null;
       if (XSession.SessionState != SessionState.Closed)
       {
-        XSession.SetState(SessionState.Closed, false);
-        newSession = new Session(_internalSession);
-        _internalSession = null;
         try
         {
-          newSession.XSession.ResetSession();
-          newSession.IdleSince = DateTime.Now;
+          XSession.ResetSession();
+          if (XSession.sessionResetNoReauthentication == false)
+            XSession.Authenticate();
+          Session newSession = new Session(_internalSession);
+          _internalSession = null;
+          return newSession;
         }
         catch
         {
-          newSession = null;
+          _internalSession.Close();
         }
       }
-      return newSession;
+      return null;
     }
 
     /// <summary>
@@ -403,10 +383,8 @@ namespace MySqlX.XDevAPI
     /// </summary>
     public void Close()
     {
-      if (XSession.SessionState != SessionState.Closed)
-      {
-        XSession.Close();
-      }
+      if (_internalSession.SessionState != SessionState.Closed)
+        _internalSession.Close();
     }
 
     #region Savepoints
@@ -428,7 +406,7 @@ namespace MySqlX.XDevAPI
     /// <returns>The name of the transaction savepoint.</returns>
     public string SetSavepoint(string name)
     {
-      InternalSession.ExecuteSqlNonQuery($"SAVEPOINT {name}");
+      _internalSession.ExecuteSqlNonQuery($"SAVEPOINT {name}");
       return name;
     }
 
@@ -438,7 +416,7 @@ namespace MySqlX.XDevAPI
     /// <param name="name">The name of the transaction savepoint.</param>
     public void ReleaseSavepoint(string name)
     {
-      InternalSession.ExecuteSqlNonQuery($"RELEASE SAVEPOINT {name}");
+      _internalSession.ExecuteSqlNonQuery($"RELEASE SAVEPOINT {name}");
     }
 
     /// <summary>
@@ -447,7 +425,7 @@ namespace MySqlX.XDevAPI
     /// <param name="name">The name of the transaction savepoint.</param>
     public void RollbackTo(string name)
     {
-      InternalSession.ExecuteSqlNonQuery($"ROLLBACK TO {name}");
+      _internalSession.ExecuteSqlNonQuery($"ROLLBACK TO {name}");
     }
 
     #endregion

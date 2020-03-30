@@ -84,7 +84,7 @@ namespace MySqlX.XDevAPI.CRUD
     /// <exception cref="MySqlException">The server version is lower than 8.0.3.</exception>
     public FindStatement LockShared(LockContention lockOption = LockContention.Default)
     {
-      if (!this.Session.InternalSession.GetServerVersion().isAtLeast(8, 0, 3))
+      if (!this.Session.XSession.GetServerVersion().isAtLeast(8, 0, 3))
         throw new MySqlException(string.Format(ResourcesX.FunctionalityNotSupported, "8.0.3"));
 
       findParams.Locking = Protocol.X.RowLock.SharedLock;
@@ -101,7 +101,7 @@ namespace MySqlX.XDevAPI.CRUD
     /// <exception cref="MySqlException">The server version is lower than 8.0.3.</exception>
     public FindStatement LockExclusive(LockContention lockOption = LockContention.Default)
     {
-      if (!this.Session.InternalSession.GetServerVersion().isAtLeast(8, 0, 3))
+      if (!this.Session.XSession.GetServerVersion().isAtLeast(8, 0, 3))
         throw new MySqlException(string.Format(ResourcesX.FunctionalityNotSupported, "8.0.3"));
 
       findParams.Locking = Protocol.X.RowLock.ExclusiveLock;
