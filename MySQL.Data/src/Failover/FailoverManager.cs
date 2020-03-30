@@ -88,25 +88,12 @@ namespace MySql.Data.Failover
     /// <param name="connectionString">An out parameter that stores the updated connection string.</param>
     /// <param name="client">A <see cref="Client"/> object in case this is a pooling scenario.</param>
     /// <returns>An <see cref="InternalSession"/> instance if the connection was succesfully established, a <see cref="MySqlException"/> exception is thrown otherwise.</returns>
-    internal static InternalSession AttemptConnectionXProtocol(string originalConnectionString, out string connectionString, bool isDefaulPort, Client client = null)
+    internal static InternalSession AttemptConnectionXProtocol(string originalConnectionString, out string connectionString, bool isDefaulPort)
     {
       if (FailoverGroup == null || originalConnectionString == null)
       {
         connectionString = null;
         return null;
-      }
-
-      if (client != null)
-      {
-        if (client.Hosts == null)
-        {
-          client.Hosts = FailoverGroup.Hosts;
-          client.DemotedHosts = new ConcurrentQueue<FailoverServer>();
-        }
-        else
-        {
-          FailoverGroup.Hosts = client.Hosts;
-        }
       }
 
       FailoverServer currentHost = FailoverGroup.ActiveHost;
@@ -132,17 +119,6 @@ namespace MySql.Data.Failover
 
         var tmpHost = currentHost;
         currentHost = FailoverGroup.GetNextHost();
-
-        if (client != null)
-        {
-          tmpHost.DemotedTime = DateTime.Now;
-          client.Hosts.Remove(tmpHost);
-          client.DemotedHosts.Enqueue(tmpHost);
-
-          if (client.DemotedServersTimer == null)
-            client.DemotedServersTimer = new Timer(new TimerCallback(client.ReleaseDemotedHosts),
-              null, Client.DEMOTED_TIMEOUT, Timeout.Infinite);
-        }
       }
       while (!currentHost.Equals(initialHost));
 

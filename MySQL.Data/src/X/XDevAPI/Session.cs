@@ -40,18 +40,18 @@ namespace MySqlX.XDevAPI
   /// </summary>
   public class Session : BaseSession
   {
-    internal Session(string connectionString, Client client = null)
-      : base(connectionString, client)
+    internal Session(string connectionString)
+      : base(connectionString)
     {
     }
 
-    internal Session(object connectionData, Client client = null)
-      : base(connectionData, client)
+    internal Session(object connectionData)
+      : base(connectionData)
     {
     }
 
-    internal Session(InternalSession internalSession, Client client)
-      : base(internalSession, client)
+    internal Session(InternalSession internalSession)
+      : base(internalSession)
     {
     }
 

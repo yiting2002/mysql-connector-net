@@ -58,7 +58,6 @@ namespace MySqlX.XDevAPI
     private const string CONNECTION_ATTRIBUTES_CONNECTION_OPTION_KEYWORD = "connection-attributes";
     private const string MYSQLX_URI_SCHEME = "mysqlx";
     internal QueueTaskScheduler _scheduler = new QueueTaskScheduler();
-    protected readonly Client _client;
 
     internal InternalSession InternalSession
     {
@@ -201,18 +200,17 @@ namespace MySqlX.XDevAPI
     /// give a priority for every host or no priority to any host.
     /// </para>
     /// </remarks>
-    internal BaseSession(string connectionString, Client client = null) : this()
+    internal BaseSession(string connectionString) : this()
     {
       if (string.IsNullOrWhiteSpace(connectionString))
         throw new ArgumentNullException("connectionString");
 
-      _client = client;
-      this._connectionString = ParseConnectionData(connectionString, client);
+      this._connectionString = ParseConnectionData(connectionString);
 
       // Multiple hosts were specified.
       if (FailoverManager.FailoverGroup != null && FailoverManager.FailoverGroup.Hosts?.Count > 1)
       {
-        _internalSession = FailoverManager.AttemptConnectionXProtocol(this._connectionString, out this._connectionString, _isDefaultPort, client);
+        _internalSession = FailoverManager.AttemptConnectionXProtocol(this._connectionString, out this._connectionString, _isDefaultPort);
         Settings.ConnectionString = this._connectionString;
         Settings.AnalyzeConnectionString(this._connectionString, true, _isDefaultPort);
       }
@@ -243,14 +241,12 @@ namespace MySqlX.XDevAPI
     /// <see cref="BaseSession(string)"/>. Note that the value of the property must be a string.
     /// </para>
     /// </remarks>
-    internal BaseSession(object connectionData, Client client = null) : this()
+    internal BaseSession(object connectionData) : this()
     {
       if (connectionData == null)
         throw new ArgumentNullException("connectionData");
 
-      _client = client;
-      if (client == null)
-        FailoverManager.Reset();
+      FailoverManager.Reset();
 
       var values = Tools.GetDictionaryFromAnonymous(connectionData);
       if (!values.Keys.Any(s => s.ToLowerInvariant() == PORT_CONNECTION_OPTION_KEYWORD))
@@ -284,7 +280,7 @@ namespace MySqlX.XDevAPI
       if (FailoverManager.FailoverGroup != null && FailoverManager.FailoverGroup.Hosts?.Count > 1)
       {
         // Multiple hosts were specified.
-        _internalSession = FailoverManager.AttemptConnectionXProtocol(this._connectionString, out this._connectionString, _isDefaultPort, client);
+        _internalSession = FailoverManager.AttemptConnectionXProtocol(this._connectionString, out this._connectionString, _isDefaultPort);
         Settings.ConnectionString = _connectionString;
       }
       else
@@ -296,11 +292,10 @@ namespace MySqlX.XDevAPI
         DefaultSchema = GetSchema(Settings.Database);
     }
 
-    internal BaseSession(InternalSession internalSession, Client client)
+    internal BaseSession(InternalSession internalSession)
     {
       _internalSession = internalSession;
       Settings = internalSession.Settings;
-      _client = client;
     }
 
     // Constructor used exclusively to parse connection string or connection data
@@ -382,6 +377,27 @@ namespace MySqlX.XDevAPI
       InternalSession.ExecuteSqlNonQuery("ROLLBACK");
     }
 
+    public Session Reuse()
+    {
+      Session newSession = null;
+      if (XSession.SessionState != SessionState.Closed)
+      {
+        XSession.SetState(SessionState.Closed, false);
+        newSession = new Session(_internalSession);
+        _internalSession = null;
+        try
+        {
+          newSession.XSession.ResetSession();
+          newSession.IdleSince = DateTime.Now;
+        }
+        catch
+        {
+          newSession = null;
+        }
+      }
+      return newSession;
+    }
+
     /// <summary>
     /// Closes this session or releases it to the pool.
     /// </summary>
@@ -389,28 +405,8 @@ namespace MySqlX.XDevAPI
     {
       if (XSession.SessionState != SessionState.Closed)
       {
-        if (_client == null)
-          CloseFully();
-        else
-        {
-          _client.ReleaseSession(this);
-          XSession.SetState(SessionState.Closed, false);
-          _internalSession = null;
-        }
+        XSession.Close();
       }
-    }
-
-    /// <summary>
-    /// Closes this session
-    /// </summary>
-    internal void CloseFully()
-    {
-      XSession.Close();
-    }
-
-    internal void Reset()
-    {
-      XSession.ResetSession();
     }
 
     #region Savepoints
@@ -461,10 +457,9 @@ namespace MySqlX.XDevAPI
     /// </summary>
     /// <param name="connectionData">The connection string or connection URI.</param>
     /// <returns>An updated connection string representation of the provided connection string or connection URI.</returns>
-    protected internal string ParseConnectionData(string connectionData, Client client = null)
+    protected internal string ParseConnectionData(string connectionData)
     {
-      if (client == null)
-        FailoverManager.Reset();
+      FailoverManager.Reset();
 
       if (Regex.IsMatch(connectionData, @"^mysqlx(\+\w+)?://.*", RegexOptions.IgnoreCase))
       {
