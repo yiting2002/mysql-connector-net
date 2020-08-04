@@ -60,11 +60,6 @@ namespace MySql.Data.MySqlClient
     private string _database;
     private int _commandTimeout;
 
-    /// <summary>
-    /// The client used to handle SSH connections.
-    /// </summary>
-    private Ssh _sshHandler;
-
     /// <include file='docs/MySqlConnection.xml' path='docs/InfoMessage/*'/>
     public event MySqlInfoMessageEventHandler InfoMessage;
 
@@ -83,7 +78,7 @@ namespace MySql.Data.MySqlClient
     public MySqlConnection(string connectionString)
       : this()
     {
-      Settings.AnalyzeConnectionString(connectionString ?? string.Empty, false);
+      Settings.AnalyzeConnectionString(connectionString ?? string.Empty);
       ConnectionString = connectionString;
     }
 
@@ -385,22 +380,6 @@ namespace MySql.Data.MySqlClient
       MySqlConnectionStringBuilder currentSettings = Settings;
       try
       {
-        if (Settings.ConnectionProtocol == MySqlConnectionProtocol.Tcp && Settings.IsSshEnabled())
-        {
-          _sshHandler = new Ssh(
-            Settings.SshHostName,
-            Settings.SshUserName,
-            Settings.SshPassword,
-            Settings.SshKeyFile,
-            Settings.SshPassphrase,
-            Settings.SshPort,
-            Settings.Server,
-            Settings.Port,
-            false
-          );
-          _sshHandler.StartClient();
-        }
-
         if (!Settings.Pooling || MySqlPoolManager.Hosts == null)
         {
           FailoverManager.Reset();
@@ -669,11 +648,6 @@ namespace MySql.Data.MySqlClient
         //TODO: Add support for 452 and 46X
         else
           driver.IsInActiveUse = false;
-      }
-
-      if (Settings.ConnectionProtocol == MySqlConnectionProtocol.Tcp && Settings.IsSshEnabled())
-      {
-        _sshHandler?.StopClient();
       }
 
       FailoverManager.Reset();

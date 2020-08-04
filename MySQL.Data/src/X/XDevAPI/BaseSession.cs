@@ -56,7 +56,6 @@ namespace MySqlX.XDevAPI
     private const string CONNECT_TIMEOUT_CONNECTION_OPTION_KEYWORD = "connect-timeout";
     private const string CONNECTION_ATTRIBUTES_CONNECTION_OPTION_KEYWORD = "connection-attributes";
     private const string MYSQLX_URI_SCHEME = "mysqlx";
-    private const string SSH_URI_SCHEME = "mysqlx+ssh";
     internal QueueTaskScheduler _scheduler = new QueueTaskScheduler();
     protected readonly Client _client;
 
@@ -122,15 +121,10 @@ namespace MySqlX.XDevAPI
             string.Empty :
             "/" + Settings.Database));
         var firstItemAdded = false;
-        var certificateFileAdded = false;
         foreach (var item in Settings.values)
         {
           // Skip connection options already included in the connection URI.
           if (item.Key == "server" || item.Key == "database" || item.Key == "port")
-            continue;
-
-          // Skip CertificateFile if it has already been included.
-          if ((item.Key == "certificatefile" || item.Key == "sslca") && certificateFileAdded)
             continue;
 
           try
@@ -149,12 +143,6 @@ namespace MySqlX.XDevAPI
               else
                 builder.Append("&");
 
-              if (item.Key == "certificatefile" || item.Key == "sslca")
-              {
-                certificateFileAdded = true;
-                builder.Append("sslca");
-              }
-              else
                 builder.Append(item.Key);
               builder.Append("=");
               builder.Append(value is bool ? value.ToString().ToLower() : value.ToString());
@@ -225,15 +213,13 @@ namespace MySqlX.XDevAPI
       {
         _internalSession = FailoverManager.AttemptConnectionXProtocol(this._connectionString, out this._connectionString, client);
         Settings.ConnectionString = this._connectionString;
-        Settings.AnalyzeConnectionString(this._connectionString, true);
+        Settings.AnalyzeConnectionString(this._connectionString);
       }
       // A single host was specified.
       else
       {
         Settings.ConnectionString = _connectionString;
-        if (!(_connectionString.Contains("sslmode") || _connectionString.Contains("ssl mode") || _connectionString.Contains("ssl-mode")))
-          Settings.SslMode = MySqlSslMode.Required;
-        Settings.AnalyzeConnectionString(this._connectionString, true);
+        Settings.AnalyzeConnectionString(this._connectionString);
 
           _internalSession = InternalSession.GetSession(Settings);
       }
@@ -293,7 +279,7 @@ namespace MySqlX.XDevAPI
       }
       this._connectionString = Settings.ToString();
 
-      Settings.AnalyzeConnectionString(this._connectionString, true);
+      Settings.AnalyzeConnectionString(this._connectionString);
       if (FailoverManager.FailoverGroup != null && FailoverManager.FailoverGroup.Hosts?.Count > 1)
       {
         // Multiple hosts were specified.
@@ -557,7 +543,7 @@ namespace MySqlX.XDevAPI
       if (uri == null)
         uri = updatedUri == null ? new Uri(connectionUri) : new Uri(updatedUri);
 
-      if (uri.Scheme != MYSQLX_URI_SCHEME && uri.Scheme != SSH_URI_SCHEME)
+      if (uri.Scheme != MYSQLX_URI_SCHEME)
         throw new ArgumentException(string.Format(ResourcesX.DnsSrvInvalidScheme, uri.Scheme));
 
       return ConvertToConnectionString(uri, hierPart, parseServerAsUnixSocket);

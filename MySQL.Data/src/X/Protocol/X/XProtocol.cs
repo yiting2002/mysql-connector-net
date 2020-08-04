@@ -148,9 +148,7 @@ namespace MySqlX.Protocol
       {
         var value = new Any();
 
-        if (cap.Key == "tls")
-          value = ExprUtil.BuildAny(cap.Value);
-        else if (cap.Key == "session_connect_attrs" || cap.Key == "compression")
+        if (cap.Key == "session_connect_attrs" || cap.Key == "compression")
         {
           var obj = new Mysqlx.Datatypes.Object();
 

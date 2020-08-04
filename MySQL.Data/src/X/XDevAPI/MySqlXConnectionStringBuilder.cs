@@ -75,8 +75,6 @@ namespace MySqlX.XDevAPI
       // Authentication options.
       Options.Add(new MySqlConnectionStringOption("auth", null, typeof(MySqlAuthenticationMode), MySqlAuthenticationMode.Default, false,
         (msb, sender, value) => { msb.SetValue("auth", value); }, (msb, sender) => msb.Auth));
-      Options.Add(new MySqlConnectionStringOption("sslcrl", "ssl-crl", typeof(string), null, false,
-        (msb, sender, value) => { msb.SslCrl = value as string; }, ((msb, sender) => { return msb.SslCrl; })));
     }
 
     /// <summary>
@@ -103,14 +101,11 @@ namespace MySqlX.XDevAPI
     /// <param name="connectionString">The connection string.</param>
     public MySqlXConnectionStringBuilder(string connectionString) : this()
     {
-      AnalyzeConnectionString(connectionString, true);
+      AnalyzeConnectionString(connectionString);
       lock (this)
       {
         ConnectionString = connectionString;
       }
-
-      if (SslMode == MySqlSslMode.Preferred)
-        SslMode = MySqlSslMode.Required;
     }
 
     /// <summary>
@@ -173,16 +168,6 @@ namespace MySqlX.XDevAPI
     {
       get { return (MySqlAuthenticationMode)values["auth"]; }
       set { SetValue("auth", value); }
-    }
-
-    /// <summary>
-    /// Path to a local file containing certificate revocation lists.
-    /// </summary>
-    [Description("Path to a local file containing certificate revocation lists")]
-    public string SslCrl
-    {
-      get { throw new NotSupportedException(); }
-      set { throw new NotSupportedException(); }
     }
 
     /// <summary>

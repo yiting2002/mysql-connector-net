@@ -378,36 +378,6 @@ namespace MySql.Data.MySqlClient
   }
 
   /// <summary>
-  /// SSL options for connection.
-  /// </summary>
-  public enum MySqlSslMode
-  {
-    /// <summary>
-    /// Do not use SSL.
-    /// </summary>
-    None,
-    /// <summary>
-    /// Use SSL, if server supports it. This option is only available for the classic protocol.
-    /// </summary>
-    Preferred,
-    Prefered = Preferred,
-    /// <summary>
-    /// Always use SSL. Deny connection if server does not support SSL.
-    /// Do not perform server certificate validation.
-    /// This is the default SSL mode when the same isn't specified as part of the connection string.
-    /// </summary>
-    Required,
-    /// <summary>
-    /// Always use SSL. Validate server SSL certificate, but different host name mismatch.
-    /// </summary>
-    VerifyCA,
-    /// <summary>
-    /// Always use SSL and perform full certificate validation.
-    /// </summary>
-    VerifyFull
-  }
-
-  /// <summary>
   /// Specifies the connection types supported
   /// </summary>
   public enum MySqlDriverType
@@ -424,25 +394,6 @@ namespace MySql.Data.MySqlClient
     /// Use MySQL embedded server.
     /// </summary>
     Embedded
-  }
-
-  /// <summary>
-  /// Defines the location of the certificate store.
-  /// </summary>
-  public enum MySqlCertificateStoreLocation
-  {
-    /// <summary>
-    /// Do not use certificate store.
-    /// </summary>
-    None,
-    /// <summary>
-    /// Use certificate store for the current user.
-    /// </summary>
-    CurrentUser,
-    /// <summary>
-    /// User certificate store for the machine.
-    /// </summary>
-    LocalMachine
   }
 
   /// <summary>

@@ -99,7 +99,7 @@ namespace MySqlX.XDevAPI
           settings.SetValue(item.Key, item.Value);
         }
         _connectionString = settings.ToString().Replace("\"", "");
-        settings.AnalyzeConnectionString(_connectionString, true);
+        settings.AnalyzeConnectionString(_connectionString);
       }
 
       _connectionOptions = ParseConnectionOptions(connectionOptions);

@@ -225,7 +225,7 @@ namespace MySql.Data.MySqlClient
     /// <param name="connectionString">The connection string.</param>
     public MySqlConnectionStringBuilder(string connectionString) : this()
     {
-      AnalyzeConnectionString(connectionString, false);
+      AnalyzeConnectionString(connectionString);
       lock (this)
       {
         ConnectionString = connectionString;

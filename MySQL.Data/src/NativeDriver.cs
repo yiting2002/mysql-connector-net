@@ -265,39 +265,6 @@ namespace MySql.Data.MySqlClient
       packet.WriteByte(33); //character set utf-8
       packet.Write(new byte[23]);
 
-      if ((serverCaps & ClientFlags.SSL) == 0)
-      {
-        if (Settings.SslMode != MySqlSslMode.None &&
-            Settings.SslMode != MySqlSslMode.Preferred)
-        {
-          // Client requires SSL connections.
-          string message = String.Format(Resources.NoServerSSLSupport,
-              Settings.Server);
-          throw new MySqlException(message);
-        }
-      }
-      else if (Settings.SslMode != MySqlSslMode.None)
-      {
-        stream.SendPacket(packet);
-        stream = new Ssl(
-          Settings.Server,
-          Settings.SslMode,
-          Settings.CertificateFile,
-          Settings.CertificateStoreLocation,
-          Settings.CertificatePassword,
-          Settings.CertificateThumbprint,
-          Settings.SslCa,
-          Settings.SslCert,
-          Settings.SslKey,
-          Settings.TlsVersion)
-          .StartSSL(ref baseStream, Encoding, Settings.ToString());
-        packet.Clear();
-        packet.WriteInteger((int)connectionFlags, 4);
-        packet.WriteInteger(maxSinglePacket, 4);
-        packet.WriteByte(33); //character set utf-8
-        packet.Write(new byte[23]);
-      }
-
       Authenticate(authenticationMethod, false);
 
       // if we are using compression, then we use our CompressedStream class
@@ -361,10 +328,6 @@ namespace MySql.Data.MySqlClient
       // if the server is requesting a secure connection, then we oblige
       if ((serverCaps & ClientFlags.SECURE_CONNECTION) != 0)
         flags |= ClientFlags.SECURE_CONNECTION;
-
-      // if the server is capable of SSL and the user is requesting SSL
-      if ((serverCaps & ClientFlags.SSL) != 0 && Settings.SslMode != MySqlSslMode.None)
-        flags |= ClientFlags.SSL;
 
       // if the server supports output parameters, then we do too
       if ((serverCaps & ClientFlags.PS_MULTI_RESULTS) != 0)
