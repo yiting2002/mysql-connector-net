@@ -69,8 +69,6 @@ namespace MySqlX.XDevAPI
         ));
       Options.Add(new MySqlConnectionStringOption("connection-attributes", "connectionattributes", typeof(string), "true", false,
         (msb, sender, value) => { msb.SetValue("connection-attributes", value); }, (msb, sender) => msb.ConnectionAttributes));
-      Options.Add(new MySqlConnectionStringOption("compression", "use-compression", typeof(CompressionType), CompressionType.Preferred, false,
-        (msb, sender, value) => { msb.SetValue("compression", value); }, (msb, sender) => msb.Compression));
 
       // Authentication options.
       Options.Add(new MySqlConnectionStringOption("auth", null, typeof(MySqlAuthenticationMode), MySqlAuthenticationMode.Default, false,
@@ -168,19 +166,6 @@ namespace MySqlX.XDevAPI
     {
       get { return (MySqlAuthenticationMode)values["auth"]; }
       set { SetValue("auth", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets the compression type between client and server.
-    /// </summary>
-    [Category("Server")]
-    [DisplayName("Compression Type")]
-    [Description("Compression type")]
-    [DefaultValue(CompressionType.Preferred)]
-    public CompressionType Compression
-    {
-      get { return (CompressionType)values["compression"]; }
-      set { SetValue("compression", value); }
     }
 
     #endregion

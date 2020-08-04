@@ -198,7 +198,7 @@ namespace MySql.Data.MySqlClient
             (int)MySqlErrorCode.UnableToConnectToHost);
 
       int maxSinglePacket = 255 * 255 * 255;
-      stream = new MySqlStream(baseStream, Encoding, false);
+      stream = new MySqlStream(baseStream, Encoding);
 
       stream.ResetTimeout((int)Settings.ConnectionTimeout * 1000);
 
@@ -258,11 +258,6 @@ namespace MySql.Data.MySqlClient
 
       Authenticate(authenticationMethod, false);
 
-      // if we are using compression, then we use our CompressedStream class
-      // to hide the ugliness of managing the compression
-      if ((connectionFlags & ClientFlags.COMPRESS) != 0)
-        stream = new MySqlStream(baseStream, Encoding, true);
-
       // give our stream the server version we are connected to.  
       // We may have some fields that are read differently based 
       // on the version of the server we are connected to.
@@ -299,10 +294,6 @@ namespace MySql.Data.MySqlClient
       // if the server allows it, tell it that we want long column info
       if ((serverCaps & ClientFlags.LONG_FLAG) != 0)
         flags |= ClientFlags.LONG_FLAG;
-
-      // if the server supports it and it was requested, then turn on compression
-      if ((serverCaps & ClientFlags.COMPRESS) != 0 && Settings.UseCompression)
-        flags |= ClientFlags.COMPRESS;
 
       flags |= ClientFlags.LONG_PASSWORD; // for long passwords
 

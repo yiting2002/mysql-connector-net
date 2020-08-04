@@ -148,18 +148,13 @@ namespace MySqlX.Protocol
       {
         var value = new Any();
 
-        if (cap.Key == "session_connect_attrs" || cap.Key == "compression")
+        if (cap.Key == "session_connect_attrs")
         {
           var obj = new Mysqlx.Datatypes.Object();
 
           if (cap.Key == "session_connect_attrs")
           {
             foreach (var pair in (Dictionary<string, string>)cap.Value)
-              obj.Fld.Add(new ObjectField { Key = pair.Key, Value = ExprUtil.BuildAny(pair.Value) });
-          }
-          else if (cap.Key == "compression")
-          {
-            foreach (var pair in (Dictionary<string, object>)cap.Value)
               obj.Fld.Add(new ObjectField { Key = pair.Key, Value = ExprUtil.BuildAny(pair.Value) });
           }
 

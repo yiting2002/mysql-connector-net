@@ -69,14 +69,11 @@ namespace MySql.Data.MySqlClient
       packet = new MySqlPacket(encoding);
     }
 
-    public MySqlStream(Stream baseStream, Encoding encoding, bool compress)
+    public MySqlStream(Stream baseStream, Encoding encoding)
       : this(encoding)
     {
       timedStream = new TimedStream(baseStream);
       Stream stream;
-      if (compress)
-        stream = new CompressedStream(timedStream);
-      else
         stream = timedStream;
 
       inStream = stream;

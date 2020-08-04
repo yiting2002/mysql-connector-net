@@ -182,15 +182,6 @@ namespace MySql.Data.common
         return;
       }
 
-      if (!string.IsNullOrEmpty(keyword) && isXProtocol)
-      {
-        switch (keyword)
-        {
-          case "compression":
-            throw new ArgumentException(string.Format(ResourcesX.CompressionInvalidValue, value));
-        }
-      }
-
       throw new ArgumentException(String.Format(Resources.ValueNotCorrectType, value));
     }
 

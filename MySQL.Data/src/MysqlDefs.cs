@@ -430,26 +430,6 @@ namespace MySql.Data.MySqlClient
     SkipLocked = 2
   }
 
-  /// <summary>
-  /// Defines the type of compression used when data is exchanged between client and server.
-  /// </summary>
-  public enum CompressionType
-  {
-    /// <summary>
-    /// Uses compression if client and server are able to reach a concensus. Otherwise, compression
-    /// is not used.
-    /// </summary>
-    Preferred,
-    /// <summary>
-    /// Enforces the use of compression. If no concensus is reached, an error is raised.
-    /// </summary>
-    Required,
-    /// <summary>
-    /// Disables compression.
-    /// </summary>
-    Disabled
-  }
-
   internal class MySqlConnectAttrs
   {
     static string _version;

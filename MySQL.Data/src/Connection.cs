@@ -153,12 +153,6 @@ namespace MySql.Data.MySqlClient
     [Browsable(true)]
     public override string Database => _database;
 
-    /// <summary>
-    /// Indicates if this connection should use compression when communicating with the server.
-    /// </summary>
-    [Browsable(false)]
-    public bool UseCompression => Settings.UseCompression;
-
     /// <include file='docs/MySqlConnection.xml' path='docs/State/*'/>
     [Browsable(false)]
     public override ConnectionState State => connectionState;

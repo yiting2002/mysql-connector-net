@@ -47,8 +47,6 @@ namespace MySql.Data.MySqlClient
       Options = MySqlBaseConnectionStringBuilder.Options.Clone();
 
       // Server options
-      Options.Add(new MySqlConnectionStringOption("compress", "use compression,usecompression", typeof(bool), false, false,
-        (msb, sender, value) => { msb.SetValue("compress", value); }, (msb, sender) => msb.UseCompression));
       Options.Add(new MySqlConnectionStringOption("allowbatch", "allow batch", typeof(bool), true, false,
         (msb, sender, value) => { msb.SetValue("allowbatch", value); }, (msb, sender) => msb.AllowBatch));
       Options.Add(new MySqlConnectionStringOption("logging", null, typeof(bool), false, false,
@@ -201,20 +199,6 @@ namespace MySql.Data.MySqlClient
     internal new static readonly MySqlConnectionStringOptionCollection Options;
 
     #region Server Properties
-
-    /// <summary>
-    /// Gets or sets a boolean value that indicates whether this connection
-    /// should use compression.
-    /// </summary>
-    [Category("Connection")]
-    [DisplayName("Use Compression")]
-    [Description("Should the connection use compression")]
-    [RefreshProperties(RefreshProperties.All)]
-    public bool UseCompression
-    {
-      get { return (bool)values["compress"]; }
-      set { SetValue("compress", value); }
-    }
 
     /// <summary>
     /// Gets or sets a boolean value that indicates whether this connection will allow
