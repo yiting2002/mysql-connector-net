@@ -31,9 +31,7 @@ using System;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
-using System.Security;
 using System.Drawing;
-using System.Security.Permissions;
 using System.Transactions;
 
 namespace MySql.Data.MySqlClient
@@ -139,20 +137,6 @@ namespace MySql.Data.MySqlClient
         driver.currentTransaction = t;
         DriverTransactionManager.SetDriverInTransaction(driver);
         driver.IsInActiveUse = true;
-      }
-    }
-
-    void AssertPermissions()
-    {
-      // Security Asserts can only be done when the assemblies 
-      // are put in the GAC as documented in 
-      // http://msdn.microsoft.com/en-us/library/ff648665.aspx
-      if (this.Settings.IncludeSecurityAsserts)
-      {
-        PermissionSet set = new PermissionSet(PermissionState.None);
-        set.AddPermission(new MySqlClientPermission(ConnectionString));
-        set.Demand();
-        MySqlSecurityPermission.CreatePermissionSet(true).Assert();
       }
     }
 

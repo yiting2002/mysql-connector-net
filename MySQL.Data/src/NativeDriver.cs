@@ -183,8 +183,6 @@ namespace MySql.Data.MySqlClient
       try
       {
         baseStream = StreamCreator.GetStream(Settings);
-        if (Settings.IncludeSecurityAsserts)
-          MySqlSecurityPermission.CreatePermissionSet(false).Assert();
       }
       catch (System.Security.SecurityException)
       {

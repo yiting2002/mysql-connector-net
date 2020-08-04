@@ -90,8 +90,6 @@ namespace MySql.Data.MySqlClient
       // Other properties.
       Options.Add(new MySqlConnectionStringOption("autoenlist", "auto enlist", typeof(bool), true, false,
         (msb, sender, value) => { msb.SetValue("autoenlist", value); }, (msb, sender) => msb.AutoEnlist));
-      Options.Add(new MySqlConnectionStringOption("includesecurityasserts", "include security asserts", typeof(bool), false, false,
-        (msb, sender, value) => { msb.SetValue("includesecurityasserts", value); }, (msb, sender) => msb.IncludeSecurityAsserts));
       Options.Add(new MySqlConnectionStringOption("allowzerodatetime", "allow zero datetime", typeof(bool), false, false,
         (msb, sender, value) => { msb.SetValue("allowzerodatetime", value); }, (msb, sender) => msb.AllowZeroDateTime));
       Options.Add(new MySqlConnectionStringOption("convertzerodatetime", "convert zero datetime", typeof(bool), false, false,
@@ -431,22 +429,6 @@ namespace MySql.Data.MySqlClient
     {
       get { return (bool)values["autoenlist"]; }
       set { SetValue("autoenlist", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets a boolean value that indicates if security asserts must be included.
-    /// </summary>
-    /// <remarks>Must be set to <c>true</c> when using the <see cref="MySqlClientPermission"/> class in a partial trust environment,
-    /// with the library installed in the GAC of the hosting environment. Not supported in .NET Core.
-    /// Default value is <c>false</c>.</remarks>
-    [Category("Advanced")]
-    [DisplayName("Include Security Asserts")]
-    [Description("Include security asserts to support Medium Trust")]
-    [DefaultValue(false)]
-    public bool IncludeSecurityAsserts
-    {
-      get { return (bool)values["includesecurityasserts"]; }
-      set { SetValue("includesecurityasserts", value); }
     }
 
     /// <summary>
