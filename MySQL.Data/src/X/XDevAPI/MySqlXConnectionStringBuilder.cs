@@ -101,9 +101,9 @@ namespace MySqlX.XDevAPI
     /// Constructor accepting a connection string.
     /// </summary>
     /// <param name="connectionString">The connection string.</param>
-    public MySqlXConnectionStringBuilder(string connectionString, bool isDefaultPort = true) : this()
+    public MySqlXConnectionStringBuilder(string connectionString) : this()
     {
-      AnalyzeConnectionString(connectionString, true, isDefaultPort);
+      AnalyzeConnectionString(connectionString, true);
       lock (this)
       {
         ConnectionString = connectionString;

@@ -47,8 +47,6 @@ namespace MySql.Data.MySqlClient
     private readonly uint _maxSize;
     private readonly AutoResetEvent _autoEvent;
     private int _available;
-    // Object used to lock the list of host obtained from DNS SRV lookup.
-    private readonly object _dnsSrvLock = new object();
 
     private void EnqueueIdle(Driver driver)
     {
@@ -185,25 +183,6 @@ namespace MySql.Data.MySqlClient
         lock ((_idlePool as ICollection).SyncRoot)
         {
           EnqueueIdle(driver);
-        }
-      }
-
-      lock (_dnsSrvLock)
-      {
-        if (driver.Settings.DnsSrv)
-        {
-          var dnsSrvRecords = DnsResolver.GetDnsSrvRecords(DnsResolver.ServiceName);
-          FailoverManager.SetHostList(dnsSrvRecords.ConvertAll(r => new FailoverServer(r.Target, r.Port, null)),
-            FailoverMethod.Sequential);
-
-          foreach(var idleConnection in _idlePool)
-          {
-            string idleServer = idleConnection.Settings.Server;
-            if (!FailoverManager.FailoverGroup.Hosts.Exists(h => h.Host == idleServer) && !idleConnection.IsInActiveUse)
-            {
-              idleConnection.Close();
-            }
-          }
         }
       }
 
