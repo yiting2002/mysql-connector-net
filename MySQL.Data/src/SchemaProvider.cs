@@ -882,18 +882,12 @@ namespace MySql.Data.MySqlClient
     {
       MySqlSchemaCollection dt = new MySqlSchemaCollection("ReservedWords");
       dt.AddColumn(DbMetaDataColumnNames.ReservedWord, typeof(string));
-      Stream str = Assembly.GetExecutingAssembly().GetManifestResourceStream(
-        "MySql.Data.Properties.ReservedWords.txt");
 
-      StreamReader sr = new StreamReader(str);
-      string line = sr.ReadLine();
-      while (line != null)
+      foreach (string line in Resources.ReservedWords.Split('\n'))
       {
         MySqlSchemaRow row = dt.AddRow();
         row[0] = line;
-        line = sr.ReadLine();
       }
-      sr.Dispose();
 
       return dt;
     }
