@@ -352,14 +352,6 @@ namespace MySql.Data.MySqlClient
     /// </summary>
     Tcp = 1,
     /// <summary>
-    /// Named pipe connection. Works only on Windows systems.
-    /// </summary>
-    Pipe = 2,
-    /// <summary>
-    /// Named pipe connection. Works only on Windows systems.
-    /// </summary>
-    NamedPipe = 2,
-    /// <summary>
     /// Unix domain socket connection. Works only with Unix systems.
     /// </summary>
     UnixSocket = 3,
@@ -367,14 +359,6 @@ namespace MySql.Data.MySqlClient
     /// Unix domain socket connection. Works only with Unix systems.
     /// </summary>
     Unix = 3,
-    /// <summary>
-    /// Shared memory connection. Currently works only with Windows systems.
-    /// </summary>
-    SharedMemory = 4,
-    /// <summary>
-    /// Shared memory connection. Currently works only with Windows systems.
-    /// </summary>
-    Memory = 4
   }
 
   /// <summary>

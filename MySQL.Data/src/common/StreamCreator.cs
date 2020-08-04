@@ -34,7 +34,6 @@ using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using System.Net;
 using System.Linq;
-using MySql.Data.MySqlClient.Common;
 
 namespace MySql.Data.Common
 {
@@ -43,30 +42,12 @@ namespace MySql.Data.Common
   /// </summary>
   internal class StreamCreator
   {
-    readonly string _hostList;
-    uint _port;
-    string pipeName;
-    uint keepalive;
-    DBVersion driverVersion;
-
-    public StreamCreator(string hosts, uint port, string pipeName, uint keepalive, DBVersion driverVersion)
-    {
-      _hostList = hosts;
-      if (string.IsNullOrEmpty(_hostList))
-        _hostList = "localhost";
-      this._port = port;
-      this.pipeName = pipeName;
-      this.keepalive = keepalive;
-      this.driverVersion = driverVersion;
-    }
-
-    public static Stream GetStream(string server, uint port, string pipename, uint keepalive, DBVersion v, uint timeout)
+    public static Stream GetStream(string server, uint port, uint keepalive, uint timeout)
     {
       MySqlConnectionStringBuilder settings = new MySqlConnectionStringBuilder
       {
         Server = server,
         Port = port,
-        PipeName = pipename,
         Keepalive = keepalive,
         ConnectionTimeout = timeout
       };
@@ -80,8 +61,6 @@ namespace MySql.Data.Common
       {
         case MySqlConnectionProtocol.Tcp: return GetTcpStream(settings);
         case MySqlConnectionProtocol.UnixSocket: return GetUnixSocketStream(settings);
-        case MySqlConnectionProtocol.SharedMemory: return GetSharedMemoryStream(settings);
-        case MySqlConnectionProtocol.NamedPipe: return GetNamedPipeStream(settings);
       }
       throw new InvalidOperationException(Resources.UnknownConnectionProtocol);
     }
@@ -140,19 +119,6 @@ namespace MySql.Data.Common
         socket.Dispose();
         throw;
       }
-    }
-
-    private static Stream GetSharedMemoryStream(MySqlConnectionStringBuilder settings)
-    {
-      SharedMemoryStream str = new SharedMemoryStream(settings.SharedMemoryName);
-      str.Open(settings.ConnectionTimeout);
-      return str;
-    }
-
-    private static Stream GetNamedPipeStream(MySqlConnectionStringBuilder settings)
-    {
-      Stream stream = NamedPipeStream.Create(settings.PipeName, settings.Server, settings.ConnectionTimeout);
-      return stream;
     }
 
     /// <summary>

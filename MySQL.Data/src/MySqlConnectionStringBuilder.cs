@@ -47,16 +47,6 @@ namespace MySql.Data.MySqlClient
       Options = MySqlBaseConnectionStringBuilder.Options.Clone();
 
       // Server options
-      Options.Add(new MySqlConnectionStringOption("pipe", "pipe name,pipename", typeof(string), "MYSQL", false,
-        (msb, sender, value) =>
-        {
-#if !NET452
-          throw new PlatformNotSupportedException(string.Format(Resources.OptionNotCurrentlySupported, nameof(PipeName)));
-#else
-          msb.SetValue("pipe", value);
-#endif
-        },
-        (msb, sender) => msb.PipeName));
       Options.Add(new MySqlConnectionStringOption("compress", "use compression,usecompression", typeof(bool), false, false,
         (msb, sender, value) => { msb.SetValue("compress", value); }, (msb, sender) => msb.UseCompression));
       Options.Add(new MySqlConnectionStringOption("allowbatch", "allow batch", typeof(bool), true, false,
@@ -67,16 +57,6 @@ namespace MySql.Data.MySqlClient
           msb.SetValue("logging", value);
         },
         (msb, sender) => msb.Logging));
-      Options.Add(new MySqlConnectionStringOption("sharedmemoryname", "shared memory name", typeof(string), "MYSQL", false,
-        (msb, sender, value) =>
-        {
-#if !NET452
-          throw new PlatformNotSupportedException(string.Format(Resources.OptionNotCurrentlySupported, nameof(SharedMemoryName)));
-#else
-          msb.SetValue("sharedmemoryname", value);
-#endif
-        },
-        (msb, sender) => msb.SharedMemoryName));
       Options.Add(new MySqlConnectionStringOption("defaultcommandtimeout", "command timeout,default command timeout", typeof(uint), (uint)30, false,
         (msb, sender, value) => { msb.SetValue("defaultcommandtimeout", value); }, (msb, sender) => msb.DefaultCommandTimeout));
       Options.Add(new MySqlConnectionStringOption("usedefaultcommandtimeoutforef", "use default command timeout for ef", typeof(bool), false, false,
@@ -104,21 +84,6 @@ namespace MySql.Data.MySqlClient
       // Authentication options.
       Options.Add(new MySqlConnectionStringOption("persistsecurityinfo", "persist security info", typeof(bool), false, false,
         (msb, sender, value) => { msb.SetValue("persistsecurityinfo", value); }, (msb, sender) => msb.PersistSecurityInfo));
-      Options.Add(new MySqlConnectionStringOption("integratedsecurity", "integrated security", typeof(bool), false, false,
-        delegate (MySqlConnectionStringBuilder msb, MySqlConnectionStringOption sender, object value)
-        {
-#if !NET452
-          throw new PlatformNotSupportedException(string.Format(Resources.OptionNotCurrentlySupported, nameof(IntegratedSecurity)));
-#else
-          msb.SetValue("Integrated Security", value.ToString().Equals("SSPI", StringComparison.OrdinalIgnoreCase) ? true : value);
-#endif
-        },
-        delegate (MySqlConnectionStringBuilder msb, MySqlConnectionStringOption sender)
-        {
-          object val = msb.values["integratedsecurity"];
-          return (bool)val;
-        }
-        ));
       Options.Add(new MySqlConnectionStringOption("allowpublickeyretrieval", null, typeof(bool), false, false,
         (msb, sender, value) => { msb.SetValue("allowpublickeyretrieval", value); }, (msb, sender) => msb.AllowPublicKeyRetrieval));
 
@@ -240,20 +205,6 @@ namespace MySql.Data.MySqlClient
     #region Server Properties
 
     /// <summary>
-    /// Gets or sets the name of the named pipe that should be used
-    /// for communicating with MySQL.
-    /// </summary>
-    [Category("Connection")]
-    [DisplayName("Pipe Name")]
-    [Description("Name of pipe to use when connecting with named pipes (Win32 only)")]
-    [RefreshProperties(RefreshProperties.All)]
-    public string PipeName
-    {
-      get { return (string)values["pipe"]; }
-      set { SetValue("pipe", value); }
-    }
-
-    /// <summary>
     /// Gets or sets a boolean value that indicates whether this connection
     /// should use compression.
     /// </summary>
@@ -291,20 +242,6 @@ namespace MySql.Data.MySqlClient
     {
       get { return (bool)values["logging"]; }
       set { SetValue("logging", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets the base name of the shared memory objects used to 
-    /// communicate with MySQL when the shared memory protocol is being used.
-    /// </summary>
-    [Category("Connection")]
-    [DisplayName("Shared Memory Name")]
-    [Description("Name of the shared memory object to use")]
-    [RefreshProperties(RefreshProperties.All)]
-    public string SharedMemoryName
-    {
-      get { return (string)values["sharedmemoryname"]; }
-      set { SetValue("sharedmemoryname", value); }
     }
 
     /// <summary>
@@ -381,20 +318,6 @@ namespace MySql.Data.MySqlClient
     {
       get { return (bool)values["persistsecurityinfo"]; }
       set { SetValue("persistsecurityinfo", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets a boolean value that indicates if the connection should be encrypted.
-    /// </summary>
-    /// <remarks>Obsolte. Use <see cref="SslMode"/> instead.</remarks>
-    [Category("Authentication")]
-    [DisplayName("Integrated Security")]
-    [Description("Use windows authentication when connecting to server")]
-    [DefaultValue(false)]
-    public bool IntegratedSecurity
-    {
-      get { return (bool)values["integratedsecurity"]; }
-      set { SetValue("integratedsecurity", value); }
     }
 
     /// <summary>

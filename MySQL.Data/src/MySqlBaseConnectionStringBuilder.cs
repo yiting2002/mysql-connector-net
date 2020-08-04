@@ -58,14 +58,6 @@ namespace MySql.Data.MySqlClient
       Options.Add(new MySqlConnectionStringOption("protocol", "connection protocol,connectionprotocol", typeof(MySqlConnectionProtocol), MySqlConnectionProtocol.Sockets, false,
         (SetterDelegate)((msb, sender, value) =>
         {
-#if !NET452
-         MySqlConnectionProtocol enumValue;
-         if (Enum.TryParse<MySqlConnectionProtocol>(value.ToString(), true, out enumValue))
-         {
-           if (enumValue == MySqlConnectionProtocol.Memory || enumValue == MySqlConnectionProtocol.Pipe)
-             throw new PlatformNotSupportedException(string.Format(Resources.OptionNotCurrentlySupported, $"Protocol={value}"));
-         }
-#endif
           msb.SetValue("protocol", value);
         }),
         (GetterDelegate)((msb, sender) => msb.ConnectionProtocol)));

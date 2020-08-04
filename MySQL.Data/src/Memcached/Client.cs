@@ -81,7 +81,7 @@ namespace MySql.Data.MySqlClient.Memcached
     /// </summary>
     public virtual void Open()
     {
-      this.stream = StreamCreator.GetStream(server, port, null, 10, new DBVersion(), 60);
+      this.stream = StreamCreator.GetStream(server, port, 10, 60);
     }
 
     /// <summary>

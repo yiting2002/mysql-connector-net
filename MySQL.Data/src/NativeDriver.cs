@@ -56,13 +56,6 @@ namespace MySql.Data.MySqlClient
     private int warnings;
     private MySqlAuthenticationPlugin authPlugin;
 
-    // Windows authentication method string, used by the protocol.
-    // Also known as "client plugin name".
-    const string AuthenticationWindowsPlugin = "authentication_windows_client";
-
-    // Predefined username for IntegratedSecurity
-    const string AuthenticationWindowsUser = "auth_windows";
-
     public NativeDriver(Driver owner)
     {
       this.owner = owner;
@@ -350,10 +343,6 @@ namespace MySql.Data.MySqlClient
     {
       if (authMethod != null)
       {
-        // Integrated security is a shortcut for windows auth
-        if (Settings.IntegratedSecurity)
-          authMethod = "authentication_windows_client";
-
         authPlugin = MySqlAuthenticationPlugin.GetPlugin(authMethod, this, encryptionSeed);
       }
       authPlugin.Authenticate(reset);
