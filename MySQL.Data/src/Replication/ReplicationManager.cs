@@ -48,16 +48,6 @@ namespace MySql.Data.MySqlClient.Replication
     static ReplicationManager()
     {
       Groups = groups;
-
-      // load up our selectors
-      if (MySqlConfiguration.Settings == null) return;
-
-      foreach (var group in MySqlConfiguration.Settings.Replication.ServerGroups)
-      {
-        ReplicationServerGroup g = AddGroup(group.Name, group.GroupType, group.RetryTime);
-        foreach (var server in group.Servers)
-          g.AddServer(server.Name, server.IsMaster, server.ConnectionString);
-      }
     }
 
     /// <summary>

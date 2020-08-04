@@ -162,14 +162,5 @@ namespace MySql.Data.MySqlClient
     }
 
 
-    protected override string ResolveType(string nameOrType)
-    {
-      if (MySqlConfiguration.Settings == null || MySqlConfiguration.Settings.CommandInterceptors == null)
-        return base.ResolveType(nameOrType);
-      foreach (InterceptorConfigurationElement e in MySqlConfiguration.Settings.CommandInterceptors)
-        if (String.Compare(e.Name, nameOrType, true) == 0)
-          return e.Type;
-      return base.ResolveType(nameOrType);
-    }
   }
 }

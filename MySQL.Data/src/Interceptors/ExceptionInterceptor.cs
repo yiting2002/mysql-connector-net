@@ -117,14 +117,5 @@ namespace MySql.Data.MySqlClient.Interceptors
       throw e;
     }
 
-    protected override string ResolveType(string nameOrType)
-    {
-      if (MySqlConfiguration.Settings == null || MySqlConfiguration.Settings.ExceptionInterceptors == null)
-        return base.ResolveType(nameOrType);
-      foreach (InterceptorConfigurationElement e in MySqlConfiguration.Settings.ExceptionInterceptors)
-        if (String.Compare(e.Name, nameOrType, true) == 0)
-          return e.Type;
-      return base.ResolveType(nameOrType);
-    }
   }
 }
