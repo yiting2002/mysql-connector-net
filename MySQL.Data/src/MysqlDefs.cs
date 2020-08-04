@@ -628,15 +628,7 @@ namespace MySql.Data.MySqlClient
 
     private static void InitVersion()
     {
-      _version = string.Empty;
-      try
-      {
-        _version = typeof(MySqlConnectAttrs).GetTypeInfo().Assembly.GetName().Version.ToString();
-      }
-      catch (Exception ex)
-      {
-        System.Diagnostics.Debug.WriteLine(ex.ToString());
-      }
+      _version = "8.0.21";
     }
 
     private static void InitOS()
