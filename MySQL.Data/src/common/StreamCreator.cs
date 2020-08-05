@@ -130,9 +130,6 @@ namespace MySql.Data.Common
 
     internal static Socket GetUnixSocket(string server, uint connectionTimeout, uint keepAlive)
     {
-      if (Platform.IsWindows())
-        throw new InvalidOperationException(Resources.NoUnixSocketsOnWindows);
-
       EndPoint endPoint = new UnixEndPoint(server);
       Socket socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.IP);
       if (keepAlive > 0)

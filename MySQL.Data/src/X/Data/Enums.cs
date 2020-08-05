@@ -36,20 +36,6 @@ namespace MySqlX.DataAccess
     ReadWrite = 3
   }
 
-  internal enum AuthenticationMode
-  {
-    PlainAccess = 0,
-    MySQL41 = 1
-  }
-
-  internal enum OS
-  {
-    Unknown = 0,
-    Windows,
-    Linux,
-    MacOS
-  }
-
   internal enum PreparedStatementType
   {
     Find = 0,

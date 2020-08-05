@@ -158,7 +158,6 @@ namespace MySql.Data.MySqlClient
       {
         compInStream = null;
 
-        if (!Platform.IsMono())
         {
           inBufferRef = new WeakReference(inBuffer, false);
           inBuffer = null;

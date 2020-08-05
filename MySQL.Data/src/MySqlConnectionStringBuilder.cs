@@ -107,8 +107,6 @@ namespace MySql.Data.MySqlClient
       Options.Add(new MySqlConnectionStringOption("integratedsecurity", "integrated security", typeof(bool), false, false,
         delegate (MySqlConnectionStringBuilder msb, MySqlConnectionStringOption sender, object value)
         {
-          if (!Platform.IsWindows())
-            throw new MySqlException("IntegratedSecurity is supported on Windows only");
 #if !NET452
           throw new PlatformNotSupportedException(string.Format(Resources.OptionNotCurrentlySupported, nameof(IntegratedSecurity)));
 #else
@@ -141,16 +139,6 @@ namespace MySql.Data.MySqlClient
         (msb, sender) => msb.UseUsageAdvisor));
       Options.Add(new MySqlConnectionStringOption("procedurecachesize", "procedure cache size,procedure cache,procedurecache", typeof(uint), (uint)25, false,
         (msb, sender, value) => { msb.SetValue("procedurecachesize", value); }, (msb, sender) => msb.ProcedureCacheSize));
-      Options.Add(new MySqlConnectionStringOption("useperformancemonitor", "use performance monitor,useperfmon,perfmon", typeof(bool), false, false,
-        (msb, sender, value) =>
-        {
-#if !NET452
-          throw new PlatformNotSupportedException(string.Format(Resources.OptionNotCurrentlySupported, nameof(UsePerformanceMonitor)));
-#else
-          msb.SetValue("useperformancemonitor", value);
-#endif
-        },
-        (msb, sender) => msb.UsePerformanceMonitor));
       Options.Add(new MySqlConnectionStringOption("ignoreprepare", "ignore prepare", typeof(bool), true, false,
         (msb, sender, value) => { msb.SetValue("ignoreprepare", value); }, (msb, sender) => msb.IgnorePrepare));
       Options.Add(new MySqlConnectionStringOption("respectbinaryflags", "respect binary flags", typeof(bool), true, false,
@@ -490,21 +478,6 @@ namespace MySql.Data.MySqlClient
     {
       get { return (uint)values["procedurecachesize"]; }
       set { SetValue("procedurecachesize", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets a boolean value that indicates if the performance monitor hooks should be enabled.
-    /// </summary>
-    /// <remarks>Default value is <c>false</c>.</remarks>
-    [Category("Advanced")]
-    [DisplayName("Use Performance Monitor")]
-    [Description("Indicates that performance counters should be updated during execution.")]
-    [RefreshProperties(RefreshProperties.All)]
-    [DefaultValue(false)]
-    public bool UsePerformanceMonitor
-    {
-      get { return (bool)values["useperformancemonitor"]; }
-      set { SetValue("useperformancemonitor", value); }
     }
 
     /// <summary>

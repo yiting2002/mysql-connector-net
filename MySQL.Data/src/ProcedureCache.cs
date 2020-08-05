@@ -70,14 +70,12 @@ namespace MySql.Data.MySqlClient
       if (proc == null)
       {
         proc = AddNew(conn, spName);
-        conn.PerfMonitor.AddHardProcedureQuery();
         if (conn.Settings.Logging)
           MySqlTrace.LogInformation(conn.ServerThread,
             String.Format(Resources.HardProcQuery, spName));
       }
       else
       {
-        conn.PerfMonitor.AddSoftProcedureQuery();
         if (conn.Settings.Logging)
           MySqlTrace.LogInformation(conn.ServerThread,
             String.Format(Resources.SoftProcQuery, spName));
