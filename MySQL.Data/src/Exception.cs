@@ -93,9 +93,6 @@ namespace MySql.Data.MySqlClient
     /// </summary>
     internal bool IsFatal { get; }
 
-    internal bool IsQueryAborted => (Number == (int)MySqlErrorCode.QueryInterrupted ||
-                                     Number == (int)MySqlErrorCode.FileSortAborted);
-
     /// <summary>
     /// Gets the SQL state.
     /// </summary>

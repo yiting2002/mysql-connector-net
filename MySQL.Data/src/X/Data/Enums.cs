@@ -28,14 +28,6 @@
 
 namespace MySqlX.DataAccess
 {
-  internal enum ConnectionMode
-  {
-    Offline = 0,
-    ReadOnly = 1,
-    WriteOnly = 2,
-    ReadWrite = 3
-  }
-
   internal enum PreparedStatementType
   {
     Find = 0,

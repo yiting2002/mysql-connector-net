@@ -52,19 +52,6 @@ namespace MySql.Data.common
       Getter = getter;
       IsCustomized = true;
     }
-    public MySqlConnectionStringOption(string keyword, string synonyms, Type baseType, object defaultValue, bool obsolete,
-      ClassicSetterDelegate setter, ClassicGetterDelegate getter)
-    {
-      Keyword = StringUtility.ToLowerInvariant(keyword);
-      if (synonyms != null)
-        Synonyms = StringUtility.ToLowerInvariant(synonyms).Split(',');
-      BaseType = baseType;
-      Obsolete = obsolete;
-      DefaultValue = defaultValue;
-      ClassicSetter = setter;
-      ClassicGetter = getter;
-      IsCustomized = true;
-    }
 
     public MySqlConnectionStringOption(string keyword, string synonyms, Type baseType, object defaultValue, bool obsolete,
      XSetterDelegate setter, XGetterDelegate getter)
@@ -103,8 +90,6 @@ namespace MySql.Data.common
     public object DefaultValue { get; private set; }
     public SetterDelegate Setter { get; private set; }
     public GetterDelegate Getter { get; private set; }
-    public ClassicSetterDelegate ClassicSetter { get; private set; }
-    public ClassicGetterDelegate ClassicGetter { get; private set; }
     public XSetterDelegate XSetter { get; private set; }
     public XGetterDelegate XGetter { get; private set; }
 
@@ -115,10 +100,6 @@ namespace MySql.Data.common
     public delegate void SetterDelegate(MySqlBaseConnectionStringBuilder msb, MySqlConnectionStringOption sender, object value);
 
     public delegate object GetterDelegate(MySqlBaseConnectionStringBuilder msb, MySqlConnectionStringOption sender);
-
-    public delegate void ClassicSetterDelegate(MySqlConnectionStringBuilder msb, MySqlConnectionStringOption sender, object value);
-
-    public delegate object ClassicGetterDelegate(MySqlConnectionStringBuilder msb, MySqlConnectionStringOption sender);
 
     public delegate void XSetterDelegate(MySqlXConnectionStringBuilder msb, MySqlConnectionStringOption sender, object value);
 

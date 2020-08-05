@@ -28,7 +28,6 @@
 
 using MySql.Data;
 using MySql.Data.MySqlClient;
-using MySql.Data.MySqlClient.Authentication;
 using MySqlX.XDevAPI;
 using System;
 using System.Security.Cryptography;
@@ -39,18 +38,13 @@ namespace MySqlX.Security
   /// <summary>
   /// Implementation of MySQL41 authentication type.
   /// </summary>
-  internal class MySQL41AuthenticationPlugin : MySqlNativePasswordPlugin
+  internal class MySQL41AuthenticationPlugin
   {
     private MySqlXConnectionStringBuilder _settings;
 
     public MySQL41AuthenticationPlugin(MySqlXConnectionStringBuilder settings)
     {
       _settings = settings;
-    }
-
-    public override string PluginName
-    {
-      get { return "MySQL 4.1 Authentication Plugin"; }
     }
 
     public string AuthName
@@ -88,6 +82,45 @@ namespace MySqlX.Security
       response[index++] = 0;
       hex.CopyTo(response, index);
       return response;
+    }
+
+    /// <summary>
+    /// Returns a byte array containing the proper encryption of the 
+    /// given password/seed according to the new 4.1.1 authentication scheme.
+    /// </summary>
+    /// <param name="password"></param>
+    /// <param name="seedBytes"></param>
+    /// <returns></returns>
+    protected byte[] Get411Password(string password, byte[] seedBytes)
+    {
+      // if we have no password, then we just return 1 zero byte
+      if (password.Length == 0) return new byte[1];
+      //SHA1 sha = new SHA1CryptoServiceProvider();
+      SHA1 sha = SHA1.Create();
+      byte[] firstHash = null;
+      try
+      {
+        firstHash = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
+      }
+      catch (NullReferenceException)
+      {
+        firstHash = sha.ComputeHash(Encoding.Default.GetBytes(password));
+      }
+
+      byte[] secondHash = sha.ComputeHash(firstHash);
+
+      byte[] input = new byte[seedBytes.Length + secondHash.Length];
+      Array.Copy(seedBytes, 0, input, 0, seedBytes.Length);
+      Array.Copy(secondHash, 0, input, seedBytes.Length, secondHash.Length);
+      byte[] thirdHash = sha.ComputeHash(input);
+
+      byte[] finalHash = new byte[thirdHash.Length + 1];
+      finalHash[0] = 0x14;
+      Array.Copy(thirdHash, 0, finalHash, 1, thirdHash.Length);
+
+      for (int i = 1; i < finalHash.Length; i++)
+        finalHash[i] = (byte)(finalHash[i] ^ firstHash[i - 1]);
+      return finalHash;
     }
   }
 }

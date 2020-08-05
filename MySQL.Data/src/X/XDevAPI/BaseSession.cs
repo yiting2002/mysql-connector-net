@@ -268,7 +268,7 @@ namespace MySqlX.XDevAPI
           if (IsUnixSocket(server))
             Settings.SetValue(value.Key, server = NormalizeUnixSocket(server));
 
-          FailoverManager.ParseHostList(server, true, false);
+          FailoverManager.ParseHostList(server, false);
           if (FailoverManager.FailoverGroup != null && FailoverManager.FailoverGroup.Hosts?.Count > 1)
             Settings[SERVER_CONNECTION_OPTION_KEYWORD] = null;
           else if (FailoverManager.FailoverGroup != null)
@@ -520,7 +520,7 @@ namespace MySqlX.XDevAPI
         else if (isArray)
         {
           hierPart = hierPart.Substring(1, hierPart.Length - 2);
-          int hostCount = FailoverManager.ParseHostList(hierPart, true, true);
+          int hostCount = FailoverManager.ParseHostList(hierPart, true);
           if (FailoverManager.FailoverGroup != null)
           {
             hierPart = FailoverManager.FailoverGroup.ActiveHost.Host;
@@ -671,7 +671,7 @@ namespace MySqlX.XDevAPI
           updatedValue = NormalizeUnixSocket(keyValuePair.Value);
 
         // The value for the server connection option doesn't have a server list format.
-        if (FailoverManager.ParseHostList(updatedValue, true, false) == 1 && FailoverManager.FailoverGroup == null)
+        if (FailoverManager.ParseHostList(updatedValue, false) == 1 && FailoverManager.FailoverGroup == null)
           updatedConnectionString = $"{SERVER_CONNECTION_OPTION_KEYWORD}{CONNECTION_DATA_VALUE_SEPARATOR}{updatedValue}{CONNECTION_DATA_KEY_SEPARATOR}{updatedConnectionString}";
       }
 

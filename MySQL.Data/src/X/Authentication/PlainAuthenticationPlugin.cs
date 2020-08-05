@@ -43,11 +43,6 @@ namespace MySqlX.Security
       _settings = settings;
     }
 
-    public string PluginName
-    {
-      get { return "Plain Authentication Plugin"; }
-    }
-
     public string AuthName
     {
       get

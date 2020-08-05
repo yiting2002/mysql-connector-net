@@ -154,76 +154,13 @@ namespace MySql.Data.Failover
     }
 
     /// <summary>
-    /// Attempts to establish a connection to a host specified from the list.
-    /// </summary>
-    /// <param name="connection">MySqlConnection object where the new driver will be assigned</param>
-    /// <param name="originalConnectionString">The original connection string set by the user.</param>
-    /// <param name="connectionString">An out parameter that stores the updated connection string.</param>
-    /// <param name="mySqlPoolManager">A <see cref="MySqlPoolManager"> in case this is a pooling scenario."/></param>
-    internal static void AttemptConnection(MySqlConnection connection, string originalConnectionString, out string connectionString, bool mySqlPoolManager = false)
-    {
-      if (mySqlPoolManager)
-        if (MySqlPoolManager.Hosts == null)
-        {
-          MySqlPoolManager.Hosts = FailoverGroup.Hosts;
-          MySqlPoolManager.DemotedHosts = new ConcurrentQueue<FailoverServer>();
-        }
-        else
-          FailoverGroup.Hosts = MySqlPoolManager.Hosts;
-
-      FailoverServer currentHost = FailoverGroup.ActiveHost;
-      FailoverServer initialHost = currentHost;
-      Driver driver = null;
-
-      do
-      {
-        // Attempt to connect to each host by retrieving the next host based on the failover method being used
-        MySqlConnectionStringBuilder msb;
-        connectionString = "server=" + currentHost.Host + ";" + originalConnectionString.Substring(originalConnectionString.IndexOf(';') + 1);
-        if (currentHost != null && currentHost.Port != -1)
-          connectionString += ";port=" + currentHost.Port;
-        msb = new MySqlConnectionStringBuilder(connectionString);
-
-        if ((FailoverGroup.Hosts.Count == 1 && !mySqlPoolManager) ||
-          (mySqlPoolManager && MySqlPoolManager.Hosts.Count == 1 && MySqlPoolManager.DemotedHosts.IsEmpty))
-          return;
-
-        try
-        {
-          driver = Driver.Create(msb);
-          if (!mySqlPoolManager)
-            connection.driver = driver;
-          break;
-        }
-        catch (Exception) { }
-
-        var tmpHost = currentHost;
-        currentHost = FailoverGroup.GetNextHost();
-
-        if (mySqlPoolManager)
-        {
-          tmpHost.DemotedTime = DateTime.Now;
-          MySqlPoolManager.Hosts.Remove(tmpHost);
-          MySqlPoolManager.DemotedHosts.Enqueue(tmpHost);
-
-          if (MySqlPoolManager.DemotedServersTimer == null)
-            MySqlPoolManager.DemotedServersTimer = new Timer(new TimerCallback(MySqlPoolManager.ReleaseDemotedHosts),
-              null, MySqlPoolManager.DEMOTED_TIMEOUT, Timeout.Infinite);
-        }
-      } while (!currentHost.Equals(initialHost));
-
-      if (driver == null)
-        throw new MySqlException(Resources.UnableToConnectToHost);
-    }
-
-    /// <summary>
     /// Creates a <see cref="FailoverGroup"/> if more than one host is found.
     /// </summary>
     /// <param name="hierPart">A string containing an unparsed list of hosts.</param>
     /// <param name="isXProtocol"><c>true</c> if the connection is X Protocol; otherwise <c>false</c>.</param>
     /// <param name="connectionDataIsUri"><c>true</c> if the connection data is a URI; otherwise <c>false</c>.</param>
     /// <returns>The number of hosts found, -1 if an error was raised during parsing.</returns>
-    internal static int ParseHostList(string hierPart, bool isXProtocol, bool connectionDataIsUri = true)
+    internal static int ParseHostList(string hierPart, bool connectionDataIsUri = true)
     {
       if (string.IsNullOrWhiteSpace(hierPart)) return -1;
 
@@ -286,10 +223,7 @@ namespace MySql.Data.Failover
             if (priority < 0 || priority > 100)
               throw new ArgumentException(ResourcesX.PriorityOutOfLimits);
 
-            if (isXProtocol)
               hostList.Add(ConvertToFailoverServer(BaseSession.IsUnixSocket(host) ? BaseSession.NormalizeUnixSocket(host) : host, priority, connectionDataIsUri: connectionDataIsUri));
-            else
-              hostList.Add(ConvertToFailoverServer(host, priority));
           }
           else
           {

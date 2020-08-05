@@ -38,20 +38,16 @@ namespace MySql.Data.MySqlClient
   /// </summary>
   internal class CharSetMap
   {
-    private static Dictionary<string, string> _defaultCollations;
-    private static Dictionary<string, int> _maxLengths;
     private static Dictionary<string, CharacterSet> _mapping;
-    private static readonly object LockObject;
 
     // we use a static constructor here since we only want to init
     // the mapping once
     static CharSetMap()
     {
-      LockObject = new Object();
       InitializeMapping();
     }
 
-    public static CharacterSet GetCharacterSet(DBVersion version, string charSetName)
+    public static CharacterSet GetCharacterSet(string charSetName)
     {
       if (charSetName == null)
         throw new ArgumentNullException("CharSetName is null");
@@ -70,11 +66,11 @@ namespace MySql.Data.MySqlClient
     /// <param name="version">Version of the connection requesting the encoding</param>
     /// <param name="charSetName">Name of the character set to get the encoding for</param>
     /// <returns>Encoding object for the given character set name</returns>
-    public static Encoding GetEncoding(DBVersion version, string charSetName)
+    public static Encoding GetEncoding(string charSetName)
     {
       try
       {
-        CharacterSet cs = GetCharacterSet(version, charSetName);
+        CharacterSet cs = GetCharacterSet(charSetName);
 
         return Encoding.GetEncoding(cs.name);
       }
@@ -160,43 +156,6 @@ namespace MySql.Data.MySqlClient
       _mapping.Add("utf16le", new CharacterSet("utf-16", 2));
       _mapping.Add("utf32", new CharacterSet("utf-32BE", 4));
       _mapping.Add("gb18030", new CharacterSet("gb18030", 4));
-    }
-
-    internal static void InitCollections(MySqlConnection connection)
-    {
-      _defaultCollations = new Dictionary<string, string>();
-      _maxLengths = new Dictionary<string, int>();
-
-      MySqlCommand cmd = new MySqlCommand("SHOW CHARSET", connection);
-      using (MySqlDataReader reader = cmd.ExecuteReader())
-      {
-        while (reader.Read())
-        {
-          _defaultCollations.Add(reader.GetString(0), reader.GetString(2));
-          _maxLengths.Add(reader.GetString(0), Convert.ToInt32(reader.GetValue(3)));
-        }
-      }
-    }
-
-    internal static string GetDefaultCollation(string charset, MySqlConnection connection)
-    {
-      lock (LockObject)
-      {
-        if (_defaultCollations == null)
-          InitCollections(connection);
-      }
-      return !_defaultCollations.ContainsKey(charset) ? null : _defaultCollations[charset];
-    }
-
-    internal static int GetMaxLength(string charset, MySqlConnection connection)
-    {
-      lock (LockObject)
-      {
-        if (_maxLengths == null)
-          InitCollections(connection);
-      }
-
-      return !_maxLengths.ContainsKey(charset) ? 1 : _maxLengths[charset];
     }
   }
 

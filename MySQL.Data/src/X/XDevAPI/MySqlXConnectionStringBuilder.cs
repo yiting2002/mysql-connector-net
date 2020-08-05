@@ -56,12 +56,6 @@ namespace MySqlX.XDevAPI
           // signed integer (~24 days). We truncate the value if it exceeds
           // maximum (MySqlCommand.CommandTimeout uses the same technique)
           uint timeout = Math.Min(value, Int32.MaxValue);
-          if (timeout != value)
-          {
-            MySqlTrace.LogWarning(-1, "Connection timeout value too large ("
-                + value + " milliseconds). Changed to max. possible value " +
-                +timeout + " milliseconds)");
-          }
           msb.SetValue("connect-timeout", timeout);
 
         },
@@ -131,12 +125,6 @@ namespace MySqlX.XDevAPI
         // signed integer (~24 days). We truncate the value if it exceeds
         // maximum (MySqlCommand.CommandTimeout uses the same technique
         uint timeout = Math.Min(value, Int32.MaxValue);
-        if (timeout != value)
-        {
-          MySqlTrace.LogWarning(-1, "Connection timeout value too large ("
-              + value + " milliseconds). Changed to max. possible value" +
-              +timeout + " milliseconds)");
-        }
         SetValue("connect-timeout", timeout);
       }
     }

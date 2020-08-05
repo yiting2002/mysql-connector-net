@@ -50,7 +50,7 @@ namespace MySqlX.Protocol.X
       ClrValueDecoder = DecodeValue;
 
       string charset = Column.CollationName.Split('_')[0];
-      _encoding = CharSetMap.GetEncoding(new DBVersion(), charset);
+      _encoding = CharSetMap.GetEncoding(charset);
     }
 
     private object DecodeValue(byte[] bytes)
