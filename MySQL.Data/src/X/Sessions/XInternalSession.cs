@@ -29,7 +29,6 @@
 using MySql.Data;
 using MySql.Data.Common;
 using MySql.Data.MySqlClient;
-using MySql.Data.MySqlClient.Authentication;
 using MySqlX.Communication;
 using MySqlX.Protocol;
 using MySqlX.Protocol.X;
@@ -118,30 +117,12 @@ namespace MySqlX.Sessions
         }
         else
         {
-          bool authenticated = false;
           // first try using MYSQL41
           Settings.Auth = MySqlAuthenticationMode.MYSQL41;
           try
           {
             AuthenticateMySQL41();
-            authenticated = true;
           }
-          catch (MySqlException ex)
-          {
-            // code 1045 Invalid user or password
-            if (ex.Code != 1045)
-              throw;
-          }
-
-          // second try using SHA256_MEMORY
-          if (!authenticated)
-          {
-            try
-            {
-              Settings.Auth = MySqlAuthenticationMode.SHA256_MEMORY;
-              AuthenticateSha256Memory();
-              authenticated = true;
-            }
             catch (MySqlException ex)
             {
               // code 1045 Invalid user or password
@@ -150,7 +131,6 @@ namespace MySqlX.Sessions
               else
                 throw;
             }
-          }
         }
       }
       // User defined authentication
@@ -163,12 +143,6 @@ namespace MySqlX.Sessions
             break;
           case MySqlAuthenticationMode.MYSQL41:
             AuthenticateMySQL41();
-            break;
-          case MySqlAuthenticationMode.EXTERNAL:
-            AuthenticateExternal();
-            break;
-          case MySqlAuthenticationMode.SHA256_MEMORY:
-            AuthenticateSha256Memory();
             break;
           default:
             throw new NotImplementedException(Settings.Auth.ToString());
@@ -253,30 +227,6 @@ namespace MySqlX.Sessions
     {
       PlainAuthenticationPlugin plugin = new PlainAuthenticationPlugin(Settings);
       protocol.SendAuthStart(plugin.AuthName, plugin.GetAuthData(), null);
-      protocol.ReadAuthOk();
-    }
-
-    private void AuthenticateExternal()
-    {
-      ExternalAuthenticationPlugin plugin = new ExternalAuthenticationPlugin(Settings);
-      protocol.SendAuthStart(plugin.AuthName, Encoding.UTF8.GetBytes(""), null);
-      protocol.ReadAuthOk();
-    }
-
-    private void AuthenticateSha256Memory()
-    {
-      Sha256MemoryAuthenticationPlugin plugin = new Sha256MemoryAuthenticationPlugin();
-      protocol.SendAuthStart(plugin.PluginName, null, null);
-      byte[] nonce = protocol.ReadAuthContinue();
-
-      string data = $"{Settings.Database}\0{Settings.UserID}\0";
-      byte[] byteData = Encoding.UTF8.GetBytes(data);
-      byte[] clientHash = plugin.GetClientHash(Settings.Password, nonce);
-      byte[] authData = new byte[byteData.Length + clientHash.Length];
-      byteData.CopyTo(authData, 0);
-      clientHash.CopyTo(authData, byteData.Length);
-
-      protocol.SendAuthContinue(authData);
       protocol.ReadAuthOk();
     }
 

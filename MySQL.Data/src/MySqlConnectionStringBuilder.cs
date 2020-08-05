@@ -82,8 +82,6 @@ namespace MySql.Data.MySqlClient
       // Authentication options.
       Options.Add(new MySqlConnectionStringOption("persistsecurityinfo", "persist security info", typeof(bool), false, false,
         (msb, sender, value) => { msb.SetValue("persistsecurityinfo", value); }, (msb, sender) => msb.PersistSecurityInfo));
-      Options.Add(new MySqlConnectionStringOption("allowpublickeyretrieval", null, typeof(bool), false, false,
-        (msb, sender, value) => { msb.SetValue("allowpublickeyretrieval", value); }, (msb, sender) => msb.AllowPublicKeyRetrieval));
 
       // Other properties.
       Options.Add(new MySqlConnectionStringOption("autoenlist", "auto enlist", typeof(bool), true, false,
@@ -300,23 +298,6 @@ namespace MySql.Data.MySqlClient
     {
       get { return (bool)values["persistsecurityinfo"]; }
       set { SetValue("persistsecurityinfo", value); }
-    }
-
-    /// <summary>
-    /// Gets or sets a boolean value that indicates if RSA public keys should be retrieved from the server.
-    /// </summary>
-    /// <remarks>This option is only relevant when SSL is disabled. Setting this option to <c>true</c> in
-    /// 8.0 servers that have the caching_sha2_password authentication plugin as the default plugin will
-    /// cause the connection attempt to fail if the user hasn't successfully connected to the server on a
-    /// previous occasion.</remarks>
-    [Category("Authentication")]
-    [DisplayName("AllowPublicKeyRetrieval")]
-    [Description("Allow retrieval of RSA public keys from server when SSL is disabled.")]
-    [DefaultValue(false)]
-    public bool AllowPublicKeyRetrieval
-    {
-      get { return (bool)values["allowpublickeyretrieval"]; }
-      set { SetValue("allowpublickeyretrieval", value); }
     }
 
     #endregion

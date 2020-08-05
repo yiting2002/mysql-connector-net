@@ -399,14 +399,6 @@ namespace MySql.Data.MySqlClient
     /// Authenticate using MYSQL41.
     /// </summary>
     MYSQL41 = 2,
-    /// <summary>
-    /// Authenticate using EXTERNAL.
-    /// </summary>
-    EXTERNAL = 3,
-    /// <summary>
-    /// Authenticate using SHA256_MEMORY.
-    /// </summary>
-    SHA256_MEMORY = 4
   }
 
   /// <summary>

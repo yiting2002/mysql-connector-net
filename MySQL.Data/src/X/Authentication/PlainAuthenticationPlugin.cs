@@ -26,12 +26,7 @@
 // along with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
-using MySql.Data;
-using MySql.Data.MySqlClient;
-using MySql.Data.MySqlClient.Authentication;
 using MySqlX.XDevAPI;
-using System;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace MySqlX.Security
@@ -39,7 +34,7 @@ namespace MySqlX.Security
   /// <summary>
   /// Implementation of PLAIN authentication type.
   /// </summary>
-  internal class PlainAuthenticationPlugin : Sha256AuthenticationPlugin
+  internal class PlainAuthenticationPlugin
   {
     private MySqlXConnectionStringBuilder _settings;
 
@@ -48,7 +43,7 @@ namespace MySqlX.Security
       _settings = settings;
     }
 
-    public override string PluginName
+    public string PluginName
     {
       get { return "Plain Authentication Plugin"; }
     }

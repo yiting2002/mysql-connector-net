@@ -164,12 +164,6 @@ namespace MySql.Data.MySqlClient.Authentication
       packet = ReadPacket();
       byte[] b = packet.Buffer;
 
-      if (PluginName == "caching_sha2_password" && b[0] == 0x01)
-      {
-        // React to the authentication type set by server: FAST, FULL.
-        ContinueAuthentication(new byte[] { b[1] });
-      }
-
       // Auth switch request Protocol::AuthSwitchRequest.
       if (b[0] == 0xfe)
       {
