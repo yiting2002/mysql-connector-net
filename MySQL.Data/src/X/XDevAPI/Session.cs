@@ -35,26 +35,8 @@ using MySqlX.XDevAPI.Relational;
 
 namespace MySqlX.XDevAPI
 {
-  /// <summary>
-  /// Represents a single server session.
-  /// </summary>
-  public class Session : BaseSession
+  partial class BaseSession
   {
-    internal Session(string connectionString)
-      : base(connectionString)
-    {
-    }
-
-    internal Session(object connectionData)
-      : base(connectionData)
-    {
-    }
-
-    internal Session(InternalSession internalSession)
-      : base(internalSession)
-    {
-    }
-
     /// <summary>
     /// Returns a <see cref="SqlStatement"/> object that can be used to execute the given SQL.
     /// </summary>

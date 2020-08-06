@@ -29,7 +29,6 @@
 using MySql.Data;
 using MySql.Data.Common;
 using MySql.Data.MySqlClient;
-using MySqlX.Common;
 using MySqlX.Sessions;
 using MySqlX.XDevAPI.Relational;
 using System;
@@ -43,7 +42,7 @@ namespace MySqlX.XDevAPI
   /// <summary>
   /// Represents a base class for a Session.
   /// </summary>
-  public abstract class BaseSession : IDisposable
+  public abstract partial class BaseSession : IDisposable
   {
     private InternalSession _internalSession;
     private string _connectionString;
@@ -64,9 +63,9 @@ namespace MySqlX.XDevAPI
       }
     }
 
-    internal XInternalSession XSession
+    internal InternalSession XSession
     {
-      get { return InternalSession as XInternalSession; }
+      get { return InternalSession; }
     }
 
     #region Session status properties
@@ -212,59 +211,13 @@ namespace MySqlX.XDevAPI
         DefaultSchema = GetSchema(Settings.Database);
     }
 
-    /// <summary>
-    /// Initializes a new instance of the BaseSession class based on the specified anonymous type object.
-    /// </summary>
-    /// <param name="connectionData">The connection data as an anonymous type used to create the session.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="connectionData"/> is null.</exception>
-    /// <remarks>
-    /// <para>Multiple hosts can be specified as part of the <paramref name="connectionData"/>, which enables client-side failover when trying to
-    /// establish a connection.</para>
-    /// <para>&#160;</para>
-    /// <para>To assign multiple hosts, create a property similar to the connection string examples shown in
-    /// <see cref="BaseSession(string)"/>. Note that the value of the property must be a string.
-    /// </para>
-    /// </remarks>
-    internal BaseSession(object connectionData) : this()
-    {
-      if (connectionData == null)
-        throw new ArgumentNullException("connectionData");
-
-      var values = Tools.GetDictionaryFromAnonymous(connectionData);
-      if (!values.Keys.Any(s => s.ToLowerInvariant() == PORT_CONNECTION_OPTION_KEYWORD))
-        values.Add(PORT_CONNECTION_OPTION_KEYWORD, X_PROTOCOL_DEFAULT_PORT);
-
-      bool hostsParsed = false;
-      foreach (var value in values)
-      {
-        if (!Settings.ContainsKey(value.Key))
-          throw new KeyNotFoundException(string.Format(ResourcesX.InvalidConnectionStringAttribute, value.Key));
-
-        Settings.SetValue(value.Key, value.Value);
-        if (!hostsParsed && !string.IsNullOrEmpty(Settings[SERVER_CONNECTION_OPTION_KEYWORD].ToString()))
-        {
-          var server = value.Value.ToString();
-          if (IsUnixSocket(server))
-            Settings.SetValue(value.Key, server = NormalizeUnixSocket(server));
-
-          hostsParsed = true;
-        }
-      }
-      this._connectionString = Settings.ToString();
-
-      Settings.AnalyzeConnectionString(this._connectionString);
-      {
-          _internalSession = InternalSession.GetSession(Settings);
-      }
-
-      if (!string.IsNullOrWhiteSpace(Settings.Database))
-        DefaultSchema = GetSchema(Settings.Database);
-    }
-
     internal BaseSession(InternalSession internalSession)
     {
       _internalSession = internalSession;
       Settings = internalSession.Settings;
+
+      if (!string.IsNullOrWhiteSpace(Settings.Database))
+        DefaultSchema = GetSchema(Settings.Database);
     }
 
     // Constructor used exclusively to parse connection string or connection data
@@ -344,17 +297,6 @@ namespace MySqlX.XDevAPI
     public void Rollback()
     {
       InternalSession.ExecuteSqlNonQuery("ROLLBACK");
-    }
-
-    /// <summary>
-    /// Closes this session or releases it to the pool.
-    /// </summary>
-    public void Close()
-    {
-      if (XSession.SessionState != SessionState.Closed)
-      {
-          CloseFully();
-      }
     }
 
     /// <summary>
@@ -631,28 +573,12 @@ namespace MySqlX.XDevAPI
     }
 
     #region IDisposable Support
-    private bool disposedValue = false; // To detect redundant calls
 
     /// <summary>
     /// Disposes the current object. Disposes of the managed state if the flag is set to true.
     /// </summary>
     /// <param name="disposing">Flag to indicate if the managed state is to be disposed.</param>
-    protected virtual void Dispose(bool disposing)
-    {
-      if (!disposedValue)
-      {
-        if (disposing)
-        {
-          // dispose managed state (managed objects).
-          Close();
-        }
-
-        // free unmanaged resources (unmanaged objects) and override a finalizer below.
-        // set large fields to null.
-
-        disposedValue = true;
-      }
-    }
+    protected abstract void Dispose(bool disposing);
 
     // override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
     // ~BaseSession() {

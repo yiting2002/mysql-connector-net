@@ -53,7 +53,7 @@ namespace MySqlX.Sessions
   /// <summary>
   /// Implementation class of InternalSession to manage connections using the Xprotocol type object.
   /// </summary>
-  internal class XInternalSession : InternalSession
+  internal partial class InternalSession
   {
     private XProtocol protocol;
     private XPacketReaderWriter _reader;
@@ -64,11 +64,7 @@ namespace MySqlX.Sessions
     private List<int> _preparedStatements = new List<int>();
     internal bool? sessionResetNoReauthentication = null;
 
-    public XInternalSession(MySqlXConnectionStringBuilder settings) : base(settings)
-    {
-    }
-
-    protected override void Open()
+    protected void Open()
     {
       bool isUnix = Settings.ConnectionProtocol == MySqlConnectionProtocol.Unix ||
         Settings.ConnectionProtocol == MySqlConnectionProtocol.UnixSocket;
@@ -242,12 +238,12 @@ namespace MySqlX.Sessions
       //OnStateChange(new StateChangeEventArgs(oldConnectionState, connectionState));
     }
 
-    internal override ProtocolBase GetProtocol()
+    internal ProtocolBase GetProtocol()
     {
       return protocol;
     }
 
-    public override void Close()
+    public void Close()
     {
       try
       {

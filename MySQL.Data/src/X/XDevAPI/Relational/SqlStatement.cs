@@ -41,7 +41,7 @@ namespace MySqlX.XDevAPI.Relational
     /// </summary>
     /// <param name="session">The session the Sql statement belongs to.</param>
     /// <param name="sql">The Sql statement.</param>
-    public SqlStatement(Session session, string sql) : base(session)
+    public SqlStatement(BaseSession session, string sql) : base(session)
     {
       SQL = sql;
     }
