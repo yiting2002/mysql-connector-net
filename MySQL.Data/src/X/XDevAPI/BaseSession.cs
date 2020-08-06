@@ -30,7 +30,6 @@ using MySql.Data;
 using MySql.Data.Common;
 using MySql.Data.MySqlClient;
 using MySqlX.Common;
-using MySql.Data.Failover;
 using MySqlX.Sessions;
 using MySqlX.XDevAPI.Relational;
 using System;
@@ -56,15 +55,11 @@ namespace MySqlX.XDevAPI
     private const string CONNECT_TIMEOUT_CONNECTION_OPTION_KEYWORD = "connect-timeout";
     private const string CONNECTION_ATTRIBUTES_CONNECTION_OPTION_KEYWORD = "connection-attributes";
     private const string MYSQLX_URI_SCHEME = "mysqlx";
-    internal QueueTaskScheduler _scheduler = new QueueTaskScheduler();
-    protected readonly Client _client;
 
     internal InternalSession InternalSession
     {
       get
       {
-        if (_internalSession == null)
-          throw new MySqlException(ResourcesX.InvalidSession);
         return _internalSession;
       }
     }
@@ -73,8 +68,6 @@ namespace MySqlX.XDevAPI
     {
       get { return InternalSession as XInternalSession; }
     }
-
-    internal DateTime IdleSince { get; set; }
 
     #region Session status properties
 
@@ -200,23 +193,13 @@ namespace MySqlX.XDevAPI
     /// give a priority for every host or no priority to any host.
     /// </para>
     /// </remarks>
-    internal BaseSession(string connectionString, Client client = null) : this()
+    internal BaseSession(string connectionString) : this()
     {
       if (string.IsNullOrWhiteSpace(connectionString))
         throw new ArgumentNullException("connectionString");
 
-      _client = client;
-      this._connectionString = ParseConnectionData(connectionString, client);
+      this._connectionString = ParseConnectionData(connectionString);
 
-      // Multiple hosts were specified.
-      if (FailoverManager.FailoverGroup != null && FailoverManager.FailoverGroup.Hosts?.Count > 1)
-      {
-        _internalSession = FailoverManager.AttemptConnectionXProtocol(this._connectionString, out this._connectionString, client);
-        Settings.ConnectionString = this._connectionString;
-        Settings.AnalyzeConnectionString(this._connectionString);
-      }
-      // A single host was specified.
-      else
       {
         Settings.ConnectionString = _connectionString;
         Settings.AnalyzeConnectionString(this._connectionString);
@@ -242,14 +225,10 @@ namespace MySqlX.XDevAPI
     /// <see cref="BaseSession(string)"/>. Note that the value of the property must be a string.
     /// </para>
     /// </remarks>
-    internal BaseSession(object connectionData, Client client = null) : this()
+    internal BaseSession(object connectionData) : this()
     {
       if (connectionData == null)
         throw new ArgumentNullException("connectionData");
-
-      _client = client;
-      if (client == null)
-        FailoverManager.Reset();
 
       var values = Tools.GetDictionaryFromAnonymous(connectionData);
       if (!values.Keys.Any(s => s.ToLowerInvariant() == PORT_CONNECTION_OPTION_KEYWORD))
@@ -268,25 +247,12 @@ namespace MySqlX.XDevAPI
           if (IsUnixSocket(server))
             Settings.SetValue(value.Key, server = NormalizeUnixSocket(server));
 
-          FailoverManager.ParseHostList(server, false);
-          if (FailoverManager.FailoverGroup != null && FailoverManager.FailoverGroup.Hosts?.Count > 1)
-            Settings[SERVER_CONNECTION_OPTION_KEYWORD] = null;
-          else if (FailoverManager.FailoverGroup != null)
-            Settings[SERVER_CONNECTION_OPTION_KEYWORD] = FailoverManager.FailoverGroup.Hosts[0].Host;
-
           hostsParsed = true;
         }
       }
       this._connectionString = Settings.ToString();
 
       Settings.AnalyzeConnectionString(this._connectionString);
-      if (FailoverManager.FailoverGroup != null && FailoverManager.FailoverGroup.Hosts?.Count > 1)
-      {
-        // Multiple hosts were specified.
-        _internalSession = FailoverManager.AttemptConnectionXProtocol(this._connectionString, out this._connectionString, client);
-        Settings.ConnectionString = _connectionString;
-      }
-      else
       {
           _internalSession = InternalSession.GetSession(Settings);
       }
@@ -295,11 +261,10 @@ namespace MySqlX.XDevAPI
         DefaultSchema = GetSchema(Settings.Database);
     }
 
-    internal BaseSession(InternalSession internalSession, Client client)
+    internal BaseSession(InternalSession internalSession)
     {
       _internalSession = internalSession;
       Settings = internalSession.Settings;
-      _client = client;
     }
 
     // Constructor used exclusively to parse connection string or connection data
@@ -388,14 +353,7 @@ namespace MySqlX.XDevAPI
     {
       if (XSession.SessionState != SessionState.Closed)
       {
-        if (_client == null)
           CloseFully();
-        else
-        {
-          _client.ReleaseSession(this);
-          XSession.SetState(SessionState.Closed, false);
-          _internalSession = null;
-        }
       }
     }
 
@@ -460,11 +418,8 @@ namespace MySqlX.XDevAPI
     /// </summary>
     /// <param name="connectionData">The connection string or connection URI.</param>
     /// <returns>An updated connection string representation of the provided connection string or connection URI.</returns>
-    protected internal string ParseConnectionData(string connectionData, Client client = null)
+    protected internal string ParseConnectionData(string connectionData)
     {
-      if (client == null)
-        FailoverManager.Reset();
-
       if (Regex.IsMatch(connectionData, @"^mysqlx(\+\w+)?://.*", RegexOptions.IgnoreCase))
       {
         return ParseConnectionUri(connectionData);
@@ -519,23 +474,6 @@ namespace MySqlX.XDevAPI
         }
         else if (isArray)
         {
-          hierPart = hierPart.Substring(1, hierPart.Length - 2);
-          int hostCount = FailoverManager.ParseHostList(hierPart, true);
-          if (FailoverManager.FailoverGroup != null)
-          {
-            hierPart = FailoverManager.FailoverGroup.ActiveHost.Host;
-            parseServerAsUnixSocket = IsUnixSocket(FailoverManager.FailoverGroup.ActiveHost.Host);
-            updatedUri = splitUri[0] + "@" +
-              (parseServerAsUnixSocket ? "localhost" : hierPart) +
-              (FailoverManager.FailoverGroup.ActiveHost.Port != -1 ? ":" + FailoverManager.FailoverGroup.ActiveHost.Port : string.Empty) +
-              (schema != string.Empty ? "/" + schema : string.Empty) +
-              (splitUri.Length == 3 ? "?" + splitUri[2] : string.Empty);
-          }
-          else if (hostCount == 1)
-            updatedUri = splitUri[0] + "@" + hierPart +
-              (schema != string.Empty ? "/" + schema : string.Empty) +
-              (splitUri.Length == 3 ? "?" + splitUri[2] : string.Empty);
-          else
             throw ex;
         }
       }
@@ -671,17 +609,11 @@ namespace MySqlX.XDevAPI
           updatedValue = NormalizeUnixSocket(keyValuePair.Value);
 
         // The value for the server connection option doesn't have a server list format.
-        if (FailoverManager.ParseHostList(updatedValue, false) == 1 && FailoverManager.FailoverGroup == null)
           updatedConnectionString = $"{SERVER_CONNECTION_OPTION_KEYWORD}{CONNECTION_DATA_VALUE_SEPARATOR}{updatedValue}{CONNECTION_DATA_KEY_SEPARATOR}{updatedConnectionString}";
       }
 
       // Default port must be added if not provided by the user.
-      if (FailoverManager.FailoverGroup == null)
         return portProvided ? updatedConnectionString : $"{updatedConnectionString}{CONNECTION_DATA_KEY_SEPARATOR}{PORT_CONNECTION_OPTION_KEYWORD}{CONNECTION_DATA_VALUE_SEPARATOR}{X_PROTOCOL_DEFAULT_PORT}";
-
-      return $"{SERVER_CONNECTION_OPTION_KEYWORD}{CONNECTION_DATA_VALUE_SEPARATOR}{FailoverManager.FailoverGroup.ActiveHost.Host}{CONNECTION_DATA_KEY_SEPARATOR}" +
-        (!portProvided ? $"{PORT_CONNECTION_OPTION_KEYWORD}{CONNECTION_DATA_VALUE_SEPARATOR}{X_PROTOCOL_DEFAULT_PORT}{CONNECTION_DATA_KEY_SEPARATOR}" : string.Empty) +
-        updatedConnectionString;
     }
 
     /// <summary>
