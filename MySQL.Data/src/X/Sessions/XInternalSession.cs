@@ -238,7 +238,7 @@ namespace MySqlX.Sessions
       //OnStateChange(new StateChangeEventArgs(oldConnectionState, connectionState));
     }
 
-    internal ProtocolBase GetProtocol()
+    internal XProtocol GetProtocol()
     {
       return protocol;
     }

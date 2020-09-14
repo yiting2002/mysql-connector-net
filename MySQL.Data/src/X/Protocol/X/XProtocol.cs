@@ -55,7 +55,7 @@ using MySql.Data.X.XDevAPI.Common;
 
 namespace MySqlX.Protocol
 {
-  internal class XProtocol : ProtocolBase
+  internal class XProtocol
   {
     private CommunicationPacket pendingPacket;
     private XPacketReaderWriter _reader;
@@ -178,12 +178,12 @@ namespace MySqlX.Protocol
         String.Format("Expected message id: {0}.  Received message id: {1}", expected, received));
     }
 
-    public override void SendSQL(string sql, params object[] args)
+    public void SendSQL(string sql, params object[] args)
     {
       SendExecuteSQLStatement(sql, args);
     }
 
-    public override bool HasData(BaseResult rs)
+    public bool HasData(BaseResult rs)
     {
       while (true)
       {
@@ -460,7 +460,7 @@ namespace MySqlX.Protocol
             throw new MySqlException(e.Code, e.SqlState, e.Msg);
     }
 
-    public override List<byte[]> ReadRow(BaseResult rs)
+    public List<byte[]> ReadRow(BaseResult rs)
     {
       CommunicationPacket packet = PeekPacket();
       if (packet.MessageType != (int)ServerMessageId.RESULTSET_ROW)
@@ -479,7 +479,7 @@ namespace MySqlX.Protocol
       return values;
     }
 
-    public override void CloseResult(BaseResult rs)
+    public void CloseResult(BaseResult rs)
     {
       rs._hasData = false;
       while (true)
@@ -515,7 +515,7 @@ namespace MySqlX.Protocol
       }
     }
 
-    public override List<XDevAPI.Relational.Column> LoadColumnMetadata()
+    public List<XDevAPI.Relational.Column> LoadColumnMetadata()
     {
       List<XDevAPI.Relational.Column> columns = new List<XDevAPI.Relational.Column>();
       // we assume our caller has already validated that metadata is there

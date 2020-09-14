@@ -74,9 +74,9 @@ namespace MySqlX.XDevAPI.Common
     }
 
     /// <summary>
-    /// Gets the <see cref="ProtocolBase"/> object of the session.
+    /// Gets the <see cref="XProtocol"/> object of the session.
     /// </summary>
-    protected ProtocolBase Protocol
+    internal XProtocol Protocol
     {
       get { return _session?.GetProtocol(); }
     }
