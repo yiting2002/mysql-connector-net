@@ -61,8 +61,6 @@ namespace MySqlX.XDevAPI
         },
         (msb, sender) => (uint)msb.values["connect-timeout"]
         ));
-      Options.Add(new MySqlConnectionStringOption("connection-attributes", "connectionattributes", typeof(string), "true", false,
-        (msb, sender, value) => { msb.SetValue("connection-attributes", value); }, (msb, sender) => msb.ConnectionAttributes));
 
       // Authentication options.
       Options.Add(new MySqlConnectionStringOption("auth", null, typeof(MySqlAuthenticationMode), MySqlAuthenticationMode.Default, false,
@@ -129,19 +127,6 @@ namespace MySqlX.XDevAPI
       }
     }
 
-    /// <summary>
-    /// Gets or sets the connection attributes.
-    /// </summary>
-    [Category("Connection")]
-    [DisplayName("Connection Attributes")]
-    [Description("Gets or sets a comma-delimited list of key-value pairs " +
-      "(in addition to standard XProtocol predefined keys) to be passed to MySQL Server" +
-      "for display as connection attributes.")]
-    public string ConnectionAttributes
-    {
-      get { return (string)values["connection-attributes"]; }
-      set { SetValue("connection-attributes", value); }
-    }
     #endregion
 
     #region Authentication Properties

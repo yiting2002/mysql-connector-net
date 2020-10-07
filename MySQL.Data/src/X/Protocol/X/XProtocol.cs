@@ -61,8 +61,6 @@ namespace MySqlX.Protocol
     private XPacketReaderWriter _reader;
     private XPacketReaderWriter _writer;
 
-    public Capabilities Capabilities { get; protected set; }
-
     public XProtocol(XPacketReaderWriter reader, XPacketReaderWriter writer)
     {
       _reader = reader;
@@ -123,60 +121,6 @@ namespace MySqlX.Protocol
     }
 
     #endregion
-
-    public void GetServerCapabilities()
-    {
-      _writer.Write(ClientMessageId.CON_CAPABILITIES_GET, new CapabilitiesGet());
-      CommunicationPacket packet = ReadPacket();
-
-      if (packet.MessageType == (int)ServerMessageId.NOTICE)
-        packet = ReadPacket();
-
-      if (packet.MessageType != (int)ServerMessageId.CONN_CAPABILITIES)
-        ThrowUnexpectedMessage(packet.MessageType, (int)ServerMessageId.CONN_CAPABILITIES);
-      Capabilities = Capabilities.Parser.ParseFrom(packet.Buffer);
-    }
-
-    public void SetCapabilities(Dictionary<string, object> clientCapabilities)
-    {
-      if (clientCapabilities == null || clientCapabilities.Count == 0)
-        return;
-
-      var builder = new CapabilitiesSet();
-      var capabilities = new Capabilities();
-      foreach (var cap in clientCapabilities)
-      {
-        var value = new Any();
-
-        if (cap.Key == "session_connect_attrs")
-        {
-          var obj = new Mysqlx.Datatypes.Object();
-
-          if (cap.Key == "session_connect_attrs")
-          {
-            foreach (var pair in (Dictionary<string, string>)cap.Value)
-              obj.Fld.Add(new ObjectField { Key = pair.Key, Value = ExprUtil.BuildAny(pair.Value) });
-          }
-
-          value = new Any { Type = Any.Types.Type.Object, Obj = obj };
-        }
-
-        var capabilityMsg = new Capability() { Name = cap.Key, Value = value };
-        capabilities.Capabilities_.Add(capabilityMsg);
-      }
-
-      builder.Capabilities = capabilities;
-      _writer.Write(ClientMessageId.CON_CAPABILITIES_SET, builder);
-      ReadOk();
-    }
-
-    private void ThrowUnexpectedMessage(int received, int expected)
-    {
-      if (received == 10) // Connection to XProtocol using ClassicProtocol port
-        throw new MySqlException("Unsupported protocol version.");
-      throw new MySqlException(
-        String.Format("Expected message id: {0}.  Received message id: {1}", expected, received));
-    }
 
     public void SendSQL(string sql, params object[] args)
     {
@@ -750,6 +694,17 @@ namespace MySqlX.Protocol
       }
       else
         throw new InvalidOperationException();
+    }
+
+    internal void ReadHello()
+    {
+      CommunicationPacket p = ReadPacket();
+      if (p.MessageType == (int)ServerMessageId.NOTICE)
+      {
+        var notice = Frame.Parser.ParseFrom(p.Buffer);
+        if (notice.Type == Frame.Types.Type.ServerHello) return;
+      }
+      throw new InvalidOperationException();
     }
 
     internal void SetXPackets(XPacketReaderWriter reader, XPacketReaderWriter writer)
